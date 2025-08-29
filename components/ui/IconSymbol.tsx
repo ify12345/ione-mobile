@@ -40,14 +40,14 @@ const MAPPING = {
   'paperplane.fill': { library: 'MaterialIcons', name: 'send' },
   'chevron.left.forwardslash.chevron.right': { library: 'MaterialIcons', name: 'code' },
   'chevron.right': { library: 'MaterialIcons', name: 'chevron-right' },
-  
+
   // FontAwesome icons
   'heart.fill': { library: 'FontAwesome', name: 'heart' },
   'star.fill': { library: 'FontAwesome', name: 'star' },
   'user.fill': { library: 'FontAwesome', name: 'user' },
   'gear': { library: 'FontAwesome', name: 'gear' },
   'money': { library: 'FontAwesome', name: 'money' },
-  
+
   // Ionicons
   'person.circle.fill': { library: 'Ionicons', name: 'person-circle' },
   'settings.fill': { library: 'Ionicons', name: 'settings' },
@@ -59,12 +59,16 @@ const MAPPING = {
   'plus.circle.fill': { library: 'AntDesign', name: 'pluscircle' },
   'search': { library: 'AntDesign', name: 'search1' },
   'shopping.cart.fill': { library: 'AntDesign', name: 'shoppingcart' },
-  
+
   // Feather icons
   'menu': { library: 'Feather', name: 'menu' },
   'edit': { library: 'Feather', name: 'edit-2' },
   'trash': { library: 'Feather', name: 'trash-2' },
   'download': { library: 'Feather', name: 'download' },
+  'location.fill': { library: 'MaterialIcons', name: 'location-on' },
+  'bell.fill': { library: 'MaterialIcons', name: 'notifications' },
+  'location.dot': { library: 'FontAwesome', name: 'map-marker' }, // FontAwesome equivalent
+  'bell': { library: 'Ionicons', name: 'notifications-outline' },
 } as const;
 
 /**
@@ -85,19 +89,19 @@ export function IconSymbol({
   weight?: SymbolWeight;
 }) {
   const iconConfig = MAPPING[name];
-  
+
   if (!iconConfig) {
     console.warn(`Icon "${name}" not found in mapping. Falling back to MaterialIcons home.`);
     return <MaterialIcons color={color} size={size} name="home" style={style} />;
   }
-  
+
   const iconProps = {
     color,
     size,
     style,
     name: iconConfig.name as any, // Type assertion needed due to union types
   };
-  
+
   switch (iconConfig.library) {
     case 'FontAwesome':
       return <FontAwesome {...iconProps} />;

@@ -74,6 +74,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <ProfileIcon color={color} width={28} height={28} />,
         }}
       />
+   
     </Tabs>
   );
 }
