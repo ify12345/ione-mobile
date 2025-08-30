@@ -25,6 +25,7 @@ export default function RootLayout() {
       <BottomSheetModalProvider>
         <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
           <Stack>
+            <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="support" options={{ headerShown: false }} />
             <Stack.Screen name="enroute" options={{ headerShown: false }} />
@@ -33,7 +34,6 @@ export default function RootLayout() {
           <StatusBar style="auto" />
         </ThemeProvider>
       </BottomSheetModalProvider>
-    </GestureHandlerRootView >
-
+    </GestureHandlerRootView>
   );
 }

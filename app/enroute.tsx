@@ -3,9 +3,6 @@ import React from 'react'
 import ParallaxScrollView from '@/components/ParallaxScrollView'
 import { ThemedView } from '@/components/ThemedView'
 import { ThemedText } from '@/components/ThemedText'
-import { Collapsible } from '@/components/Collapsible'
-import { ExternalLink } from '@/components/ExternalLink'
-import BackButton from '@/components/BackButton'
 import { Image } from 'expo-image'
 
 export default function Enroute() {
