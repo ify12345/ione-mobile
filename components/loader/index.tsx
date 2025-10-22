@@ -36,7 +36,7 @@ export default function Loader({ visible }: Prop) {
           darkColor={theme.text}
           className="text-base"
         >
-          Avenue by Market Assist
+          i-one
         </ThemedText>
 
       </View>

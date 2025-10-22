@@ -1,12 +1,11 @@
-import React, { useRef, useMemo } from 'react';
-import { View, Text, ScrollView, Image, TouchableOpacity } from 'react-native';
-import { BottomSheetModal, BottomSheetModalProvider, BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import { BottomSheetModal, BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import React, { useMemo, useRef } from 'react';
+import { Text, TouchableOpacity, View } from 'react-native';
 
-import EvilIcons from '@expo/vector-icons/EvilIcons';
-import CustomButton from './CustomButton';
-import { ThemedText } from '../ThemedText';
+import EarningIcon from '@/assets/svg/TournmentIcon';
 import { useColorScheme } from 'react-native';
-import EarningIcon from '@/assets/svg/EarningIcon';
+import { ThemedText } from '../ThemedText';
+import CustomButton from './CustomButton';
 
 
 interface DeliveryItem {
