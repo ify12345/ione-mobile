@@ -1,6 +1,7 @@
 {
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
+    "jsx": "react",
     "strict": true,
     "paths": {
       "@/*": [
@@ -15,5 +16,5 @@
     "expo-env.d.ts",
     "app/(tabs)/earnings",
     "nativewind-env.d.ts"
-  ]
+, "app/(onboarding)/forgottenpassword.tsx"  ]
 }

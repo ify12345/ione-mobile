@@ -8,6 +8,7 @@ import '@/globals.css';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+import React from 'react';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();

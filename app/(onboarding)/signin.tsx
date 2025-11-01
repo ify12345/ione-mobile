@@ -15,7 +15,7 @@ import {
   ScrollView
 } from 'react-native';
 import * as yup from 'yup';
-import React, {useState} from 'react';
+import * as React from 'react';
 import {Formik} from 'formik';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -39,7 +39,7 @@ export default function SignIn() {
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme ?? 'light'];
   const {bottom} = useSafeAreaInsets();
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = React.useState(false);
   const router = useRouter();
 
   function submit({email, password, rememberMe}: SigninInput) {
@@ -66,7 +66,7 @@ export default function SignIn() {
   });
 
   return (
-    <SafeAreaScreen className="">
+    <SafeAreaScreen className="mt-[52px]">
       <ScrollView 
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ 
@@ -76,32 +76,24 @@ export default function SignIn() {
         }}
       >
    
-        <View className="items-center mb-8">
+        <View className="items-center flex flex-row justify-between mb-8">
+            <ThemedText 
+            lightColor={theme.text} 
+            darkColor={theme.text}
+            
+            className="text-[20px] font-[500] text-center "
+          >
+            Welcome Back
+          </ThemedText>
           <Image
             source={require('@/assets/images/icon.png')}
-            style={styles.logo}
+           className='w-[100px] h-[20px]'
             resizeMode="contain"
           />
+
         </View>
 
         {/* Header */}
-        <View className="items-center mb-8">
-          <ThemedText 
-            lightColor={theme.text} 
-            darkColor={theme.text}
-            type="title"
-            className="text-3xl font-bold text-center mb-2"
-          >
-            Welcome back
-          </ThemedText>
-          <ThemedText 
-            lightColor="#6C757D" 
-            darkColor="#9BA1A6"
-            className="text-base text-center px-4 leading-6"
-          >
-            Sign in to your account to continue
-          </ThemedText>
-        </View>
 
         <Formik
           validationSchema={signinValidationSchema}
@@ -144,64 +136,35 @@ export default function SignIn() {
                 />
 
                 {/* Remember Me and Forgot Password Row */}
-                <View className="flex-row items-center justify-between mb-8">
+                <View className="flex-row mt-[54px]  flex justify-end items-end  mb-8">
                   {/* Remember Me Checkbox */}
-                  <View className="flex-row items-center">
-                    <TouchableWithoutFeedback
-                      onPress={() => setFieldValue('rememberMe', !values.rememberMe)}
-                    >
-                      <View
-                        className="w-5 h-5 border-2 rounded items-center justify-center mr-3"
-                        style={{
-                          borderColor: values.rememberMe ? '#46BB1C' : '#DADADA',
-                          backgroundColor: values.rememberMe ? '#46BB1C' : 'transparent',
-                        }}
-                      >
-                        {values.rememberMe && (
-                          <View className="w-2 h-2 bg-white rounded-sm" />
-                        )}
-                      </View>
-                    </TouchableWithoutFeedback>
-                    
-                    <TouchableWithoutFeedback
-                      onPress={() => setFieldValue('rememberMe', !values.rememberMe)}
-                    >
-                      <ThemedText 
-                        lightColor={theme.text} 
-                        darkColor={theme.text}
-                        className="text-sm"
-                      >
-                        Remember me
-                      </ThemedText>
-                    </TouchableWithoutFeedback>
-                  </View>
 
                   {/* Forgot Password Link */}
                   <TouchableWithoutFeedback onPress={() => {
                     // Navigate to forgot password screen
-                    // router.push('/forgot-password');
+                    router.push('/forgottenpassword');
                   }}>
                     <ThemedText 
                       lightColor="#46BB1C" 
                       darkColor="#46BB1C"
-                      className="text-sm font-medium"
+                      className="text-sm underline font-medium"
                     >
-                      Forgot Password?
+                     Reset Your Password?
                     </ThemedText>
                   </TouchableWithoutFeedback>
                 </View>
 
-                
+                <View className='mt-[300px]'>
                 <CustomButton
                   primary
                   title="Sign In"
                   // onPress={handleSubmit}
-                  onPress={() => router.push('/(tabs)')}
+                  // onPress={() => router.push('')}
                   disabled={!isValid}
                   className=""
                 />
 
-             
+             </View>
 
                 {/* Sign Up Link */}
                 <View className="items-center mt-3">
@@ -234,9 +197,9 @@ export default function SignIn() {
   );
 }
 
-const styles = StyleSheet.create({
-  logo: {
-    width: 130,
-    height: 60,
-  },
-});
+// const styles = StyleSheet.create({
+//   logo: {
+//     width: 130,
+//     height: 60,
+//   },
+// });

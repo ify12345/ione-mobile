@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import BankIcon from '@/assets/svg/BankIcon';
-import HistoryRequest, { historyRequests } from '@/components/HistoryRequest';
+// import BankIcon from '@/assets/svg/BankIcon';
+// import HistoryRequest, { historyRequests } from '@/components/HistoryRequest';
 import SafeAreaScreen from '@/components/SafeAreaScreen';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -9,6 +9,7 @@ import { Toggle } from '@/components/ui/Toggle';
 import Feather from '@expo/vector-icons/Feather';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Fontisto from '@expo/vector-icons/Fontisto';
+import React from 'react';
 import { useState } from 'react';
 import { FlatList, TouchableOpacity, View, useColorScheme } from 'react-native';
 

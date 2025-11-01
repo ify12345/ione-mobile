@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import BankIcon from '@/assets/svg/BankIcon';
+import * as React from 'react';
+// import BankIcon from '@/assets/svg/BankIcon';
 import SafeAreaScreen from '@/components/SafeAreaScreen';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';

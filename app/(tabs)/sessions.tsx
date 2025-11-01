@@ -4,6 +4,7 @@ import { View, useColorScheme } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import SafeAreaScreen from '@/components/SafeAreaScreen';
+import React from 'react';
 
 
 export default function SessionsScreen() {
