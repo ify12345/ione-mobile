@@ -24,7 +24,7 @@ import SafeAreaScreen from '@/components/SafeAreaScreen';
 import { Colors } from '@/constants/Colors';
 import { Icon } from '@/components/ui/Icon';
 
-const { width } = Dimensions.get('screen');
+const { height, width } = Dimensions.get('screen');
 
 export default function SignUp() {
   const colorScheme = useColorScheme();
@@ -35,53 +35,51 @@ export default function SignUp() {
   return (
     <SafeAreaScreen className="flex-1">
       <ScrollView
-        className=""
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 21, flexGrow:1, justifyContent: "space-between", paddingBottom: 40 }}>
-        {/* Logo */}
-        <View>
-        <View className="mb-8 mt-10 items-center">
-         <Icon/>
-        </View>
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingHorizontal: 21,
+          paddingBottom: 20,
+          justifyContent: "space-between",
+        }}
+      >
+        {/* Top Section - Minimal spacing */}
+        <View className="w-full items-center mt-[3%]">
+          <Icon />
 
-        {/* Header */}
-        <View className="mb-8 items-center">
           <Image
             source={require('@/assets/images/goal.png')}
-            // style={{ width: width * 0.8, height: width * 0.8 }}
-            style={styles2.man}
             resizeMode="contain"
-            className='px-8'
+            className="w-[100%] mt-[3%]"
+            style={{ height: height * 0.5 }}
           />
+
           <ThemedText
             lightColor={theme.text}
             darkColor={theme.text}
-            // type="medium"
-            className="mb-2 text-center text-[17px] font-[300]">
-            The easy way to organize teams, schedule games, track stats, and find local 5-a-side
-            venues!
+            className="mt-[3%] text-center text-[17px] font-[300] px-[5%]"
+          >
+            The easy way to organize teams, schedule games, track stats, 
+            and find local 5-a-side venues!
           </ThemedText>
         </View>
-        </View>
-        <View className="mt-4 flex flex-col gap-[22px]">
-          <CustomButton primary title="Create an Account " onPress={() => router.push('/role')} />
-          <TouchableOpacity onPress={() => router.push('/signin')} className="flex w-full items-center justify-center rounded-[6px] border-[1px] border-[#0C4D2E] py-[18px]">
-            <Text className='text-primaryDark'>Login</Text>
+
+        {/* Bottom Buttons */}
+        <View className="flex flex-col gap-[20px]">
+          <CustomButton
+            primary
+            title="Create an Account"
+            onPress={() => router.push('/role')}
+          />
+
+          <TouchableOpacity
+            onPress={() => router.push('/signin')}
+            className="flex w-full items-center justify-center rounded-[6px] border border-[#0C4D2E] py-[18px]"
+          >
+            <Text className="text-primaryDark">Login</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
     </SafeAreaScreen>
   );
 }
-const styles = StyleSheet.create({
-  logo: {
-    width: 130,
-    height: 60,
-  },
-});
-const styles2 = StyleSheet.create({
-  man: {
-    maxWidth: 412,
-    height: 412,
-  },
-});
