@@ -128,7 +128,7 @@ export default function InputField({
             styles.inputContainer,
             {
               borderColor: getBorderColor(),
-              backgroundColor: colors.secondary,
+              // backgroundColor: colors.secondary,
             },
             inputComponentStyle,
           ]}>
@@ -161,7 +161,7 @@ export default function InputField({
             styles.inputContainer,
             {
               borderColor: getBorderColor(),
-              backgroundColor: colors.secondary,
+              // backgroundColor: colors.secondary,
             },
             inputComponentStyle,
           ]}>
@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 20,
   },
   input: {
     flex: 1,

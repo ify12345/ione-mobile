@@ -28,6 +28,7 @@ import InputField from '@/components/InputField';
 import { useRouter } from 'expo-router';
 import SafeAreaScreen from '@/components/SafeAreaScreen';
 import { Colors } from '@/constants/Colors';
+import { Icon } from '@/components/ui/Icon';
 
 const { width } = Dimensions.get('screen');
 
@@ -45,14 +46,16 @@ export default function ForgottenPassword() {
         contentContainerStyle={{
           paddingHorizontal: 21,
           paddingBottom: 40,
+          flexGrow: 1,
           justifyContent: 'center',
         }}>
         <View className="mb-8 items-center">
-          <Image
+          {/* <Image
             source={require('@/assets/images/icon.png')}
             className="h-[40px] w-[100px]"
             resizeMode="contain"
-          />
+          /> */}
+          <Icon/>
         </View>
 
         {/* Header */}
@@ -73,11 +76,11 @@ export default function ForgottenPassword() {
         <View className="mt-[20px] items-center">
           <Image
             source={require('@/assets/images/thinking.png')}
-            className="h-[352px] w-[253px]"
+            className="h-[352px] px-8 max-w-[253px]"
             resizeMode="contain"
           />
         </View>
-        <View className="mt-[30px]">
+        <View className="">
           <View className="flex-1">
             {/* Email Input */}
             <InputField
@@ -102,7 +105,7 @@ export default function ForgottenPassword() {
               />
               <TouchableOpacity
                 onPress={() => router.push('/signin')}
-                className="flex w-full items-center justify-center rounded-[6px] border-[1px] border-[#0C4D2E] py-[12px]">
+                className="flex w-full items-center justify-center rounded-[6px] border-[1px] border-[#0C4D2E] py-[18px]">
                 <Text className="text-primaryDark">Cancel</Text>
               </TouchableOpacity>
             </View>

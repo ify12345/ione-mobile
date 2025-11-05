@@ -23,6 +23,7 @@ import { useRouter } from 'expo-router';
 import SafeAreaScreen from '@/components/SafeAreaScreen';
 import { Colors } from '@/constants/Colors';
 import BallIcon from '@/assets/svg/BallIcon';
+import { Icon } from '@/components/ui/Icon';
 
 const { width } = Dimensions.get('screen');
 
@@ -45,11 +46,7 @@ export default function Role() {
         contentContainerStyle={{ paddingHorizontal: 21, paddingBottom: 40 }}>
         {/* Logo */}
         <View className="mb-8 mt-10 items-end">
-          <Image
-            source={require('@/assets/images/icon.png')}
-            style={styles.logo}
-            resizeMode="contain"
-          />
+         <Icon/>
         </View>
 
         {/* Header */}

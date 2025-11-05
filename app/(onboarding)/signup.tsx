@@ -29,6 +29,7 @@ import InputField from '@/components/InputField';
 import { useRouter } from 'expo-router';
 import SafeAreaScreen from '@/components/SafeAreaScreen';
 import { Colors } from '@/constants/Colors';
+import { Icon } from '@/components/ui/Icon';
 
 const { width } = Dimensions.get('screen');
 
@@ -130,11 +131,7 @@ export default function SignUp() {
           }}
           keyboardShouldPersistTaps="handled">
           <View className="mb-8 mt-4 items-end">
-            <Image
-              source={require('@/assets/images/icon.png')}
-              className="h-[20px] w-[100px]"
-              resizeMode="contain"
-            />
+           <Icon/>
           </View>
 
           {/* Header */}

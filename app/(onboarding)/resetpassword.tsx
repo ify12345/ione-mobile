@@ -28,6 +28,7 @@ import InputField from '@/components/InputField';
 import { useRouter } from 'expo-router';
 import SafeAreaScreen from '@/components/SafeAreaScreen';
 import { Colors } from '@/constants/Colors';
+import { Icon } from '@/components/ui/Icon';
 
 const { width } = Dimensions.get('screen');
 
@@ -45,53 +46,52 @@ export default function ResetPassword() {
         contentContainerStyle={{
           paddingHorizontal: 21,
           paddingBottom: 40,
-          justifyContent: 'center',
+          flexGrow: 1,
+          justifyContent: 'space-between',
         }}>
-        <View className="mb-8 items-center">
-          <Image
-            source={require('@/assets/images/icon.png')}
-            className="h-[40px] w-[100px]"
-            resizeMode="contain"
-          />
-        </View>
+        <View>
+          <View className="mb-8 items-center">
+            <Icon />
+          </View>
 
-        {/* Header */}
-        <View className="mb-8 flex flex-col  items-center gap-[5px]">
-          <ThemedText
-            lightColor={theme.text}
-            darkColor={theme.text}
-            className="mb-2 text-center text-[20px] font-[600]">
-            Reset Password
-          </ThemedText>
-          <ThemedText
-            lightColor="#6C757D"
-            darkColor="#9BA1A6"
-            className="px-4 text-center text-base leading-6">
-        Your Password must be different from old passwords
-          </ThemedText>
+          {/* Header */}
+
+          <View className="mb-8 flex flex-col  items-center gap-[5px]">
+            <ThemedText
+              lightColor={theme.text}
+              darkColor={theme.text}
+              className="mb-2 text-center text-[20px] font-[600]">
+              Reset Password
+            </ThemedText>
+            <ThemedText
+              lightColor="#6C757D"
+              darkColor="#9BA1A6"
+              className="px-4 text-center text-base leading-6">
+              Your Password must be different from old passwords
+            </ThemedText>
+          </View>
+          <View className="mt-[20px] items-center">
+            <InputField
+              password
+              required
+              label="Password"
+              autoCapitalize="none"
+              placeholder="Enter your password"
+            />
+            <InputField
+              password
+              required
+              label="Confirm Password"
+              autoCapitalize="none"
+              placeholder="Confirm password"
+            />
+          </View>
         </View>
-        <View className="mt-[20px] items-center">
-           <InputField
-                            password
-                            required
-                            label="Password"
-                            autoCapitalize="none"
-                            placeholder="Enter your password"
-                          />
-           <InputField
-                            password
-                            required
-                            label="Confirm Password"
-                            autoCapitalize="none"
-                            placeholder="Confirm password"
-                          />
-        </View>
-        <View className="mt-[300px]">
+        <View className="">
           <View className="flex-1">
-
             {/* Remember Me and Forgot Password Row */}
 
-            <View className='flex flex-col gap-[10px]'>
+            <View className="flex flex-col gap-[10px]">
               <CustomButton
                 primary
                 title="Continue"
@@ -101,7 +101,7 @@ export default function ResetPassword() {
               />
               <TouchableOpacity
                 onPress={() => router.push('/signin')}
-                className="flex w-full items-center justify-center rounded-[6px] border-[1px] border-[#0C4D2E] py-[12px]">
+                className="bg flex w-full items-center justify-center rounded-[6px] border-[1px] border-[#0C4D2E] py-[18px]">
                 <Text className="text-primaryDark">Cancel</Text>
               </TouchableOpacity>
             </View>

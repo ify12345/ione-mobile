@@ -27,6 +27,7 @@ import InputField from '@/components/InputField';
 import { useRouter } from 'expo-router';
 import SafeAreaScreen from '@/components/SafeAreaScreen';
 import { Colors } from '@/constants/Colors';
+import { Icon } from '@/components/ui/Icon';
 
 const { width } = Dimensions.get('screen');
 
@@ -47,18 +48,14 @@ export default function Success() {
           justifyContent: 'center',
         }}>
         <View className="mb-8 items-center">
-          <Image
-            source={require('@/assets/images/icon.png')}
-            className="h-[40px] w-[100px]"
-            resizeMode="contain"
-          />
+         <Icon/>
         </View>
 
         {/* Header */}
         <View className="mb-8 mt-[127px] flex flex-col  items-center gap-[5px]">
           <Image
             source={require('@/assets/images/success1.png')}
-            className="h-[274px] items-center w-[315px]"
+            className="h-[274px] items-center px-8 max-w-[315px]"
             resizeMode="contain"
           />
         </View>

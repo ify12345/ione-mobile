@@ -12,12 +12,12 @@ import {
   useColorScheme,
   Image,
   StyleSheet,
-  ScrollView
+  ScrollView,
 } from 'react-native';
 import * as yup from 'yup';
 import * as React from 'react';
-import {Formik} from 'formik';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import { Formik } from 'formik';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import Loader from '@/components/loader';
 import { ThemedText } from '@/components/ThemedText';
@@ -26,8 +26,9 @@ import InputField from '@/components/InputField';
 import { useRouter } from 'expo-router';
 import SafeAreaScreen from '@/components/SafeAreaScreen';
 import { Colors } from '@/constants/Colors';
+import { Icon } from '@/components/ui/Icon';
 
-const {width} = Dimensions.get('screen');
+const { width } = Dimensions.get('screen');
 
 type SigninInput = {
   email: string;
@@ -38,11 +39,11 @@ type SigninInput = {
 export default function SignIn() {
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme ?? 'light'];
-  const {bottom} = useSafeAreaInsets();
+  const { bottom } = useSafeAreaInsets();
   const [loading, setLoading] = React.useState(false);
   const router = useRouter();
 
-  function submit({email, password, rememberMe}: SigninInput) {
+  function submit({ email, password, rememberMe }: SigninInput) {
     setLoading(true);
     // Add your signin logic here
     // Example: API call, authentication, etc.
@@ -54,11 +55,7 @@ export default function SignIn() {
   }
 
   const signinValidationSchema = yup.object().shape({
-    email: yup
-      .string()
-      .email('Enter a valid email')
-      .trim()
-      .required('Email is required'),
+    email: yup.string().email('Enter a valid email').trim().required('Email is required'),
     password: yup
       .string()
       .min(6, 'Password must be at least 6 characters')
@@ -67,30 +64,22 @@ export default function SignIn() {
 
   return (
     <SafeAreaScreen className="mt-[52px]">
-      <ScrollView 
+      <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ 
-          paddingHorizontal: 21, 
+        contentContainerStyle={{
+          paddingHorizontal: 21,
           paddingBottom: 40,
-          justifyContent: 'center'
-        }}
-      >
-   
-        <View className="items-center flex flex-row justify-between mb-8">
-            <ThemedText 
-            lightColor={theme.text} 
+          justifyContent: 'center',
+          flexGrow: 1,
+        }}>
+        <View className="mb-8 flex flex-row items-center justify-between">
+          <ThemedText
+            lightColor={theme.text}
             darkColor={theme.text}
-            
-            className="text-[20px] font-[500] text-center "
-          >
+            className="text-center text-[20px] font-[500] ">
             Welcome Back
           </ThemedText>
-          <Image
-            source={require('@/assets/images/icon.png')}
-           className='w-[100px] h-[20px]'
-            resizeMode="contain"
-          />
-
+          <Icon />
         </View>
 
         {/* Header */}
@@ -102,9 +91,8 @@ export default function SignIn() {
             password: '',
             rememberMe: false,
           }}
-          onSubmit={values => submit(values)}
-        >
-          {({touched, handleChange, handleSubmit, errors, isValid, values, setFieldValue}) => {
+          onSubmit={(values) => submit(values)}>
+          {({ touched, handleChange, handleSubmit, errors, isValid, values, setFieldValue }) => {
             return (
               <View className="flex-1">
                 {/* Email Input */}
@@ -136,61 +124,54 @@ export default function SignIn() {
                 />
 
                 {/* Remember Me and Forgot Password Row */}
-                <View className="flex-row mt-[54px]  flex justify-end items-end  mb-8">
+                <View className="mb-8 mt-[54px]  flex flex-row items-end  justify-end">
                   {/* Remember Me Checkbox */}
 
                   {/* Forgot Password Link */}
-                  <TouchableWithoutFeedback onPress={() => {
-                    // Navigate to forgot password screen
-                    router.push('/forgottenpassword');
-                  }}>
-                    <ThemedText 
-                      lightColor="#46BB1C" 
+                  <TouchableWithoutFeedback
+                    onPress={() => {
+                      // Navigate to forgot password screen
+                      router.push('/forgottenpassword');
+                    }}>
+                    <ThemedText
+                      lightColor="#46BB1C"
                       darkColor="#46BB1C"
-                      className="text-sm underline font-medium"
-                    >
-                     Reset Your Password?
+                      className="text-sm font-medium underline">
+                      Reset Your Password?
                     </ThemedText>
                   </TouchableWithoutFeedback>
                 </View>
 
-                <View className='mt-[300px]'>
-                <CustomButton
-                  primary
-                  title="Sign In"
-                  // onPress={handleSubmit}
-                  // onPress={() => router.push('')}
-                  disabled={!isValid}
-                  className=""
-                />
-
-             </View>
-
                 {/* Sign Up Link */}
-                <View className="items-center mt-3">
-                  <TouchableWithoutFeedback onPress={() => router.push('/(onboarding)')}>
-                    <View className="flex-row items-center">
-                      <ThemedText 
-                        lightColor="#6C757D" 
-                        darkColor="#9BA1A6"
-                        className="text-base"
-                      >
-                        Don't have an account?{' '}
-                      </ThemedText>
-                      <ThemedText 
-                        lightColor="#46BB1C" 
-                        darkColor="#46BB1C"
-                        className="text-base font-semibold"
-                      >
-                        Sign Up
-                      </ThemedText>
-                    </View>
-                  </TouchableWithoutFeedback>
-                </View>
               </View>
             );
           }}
         </Formik>
+        <View className="">
+          <CustomButton
+            primary
+            title="Sign In"
+            // onPress={handleSubmit}
+            // onPress={() => router.push('')}
+            // disabled={!isValid}
+            className=""
+          />
+        </View>
+        <View className="mt-3 items-center">
+          <TouchableWithoutFeedback onPress={() => router.push('/(onboarding)')}>
+            <View className="flex-row items-center">
+              <ThemedText lightColor="#6C757D" darkColor="#9BA1A6" className="text-base">
+                Don't have an account?{' '}
+              </ThemedText>
+              <ThemedText
+                lightColor="#46BB1C"
+                darkColor="#46BB1C"
+                className="text-base font-semibold">
+                Sign Up
+              </ThemedText>
+            </View>
+          </TouchableWithoutFeedback>
+        </View>
       </ScrollView>
       <Loader visible={loading} />
     </SafeAreaScreen>
