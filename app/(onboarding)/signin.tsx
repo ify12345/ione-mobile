@@ -152,7 +152,7 @@ export default function SignIn() {
             primary
             title="Sign In"
             // onPress={handleSubmit}
-            // onPress={() => router.push('')}
+            onPress={() => router.push('/(tabs)')}
             // disabled={!isValid}
             className=""
           />
