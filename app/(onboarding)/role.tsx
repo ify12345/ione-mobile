@@ -43,8 +43,9 @@ export default function Role() {
       <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 21, paddingBottom: 40 }}>
+        contentContainerStyle={{ paddingHorizontal: 21, flexGrow:1, justifyContent: "space-between", paddingBottom: 40 }}>
         {/* Logo */}
+        <View className="">
         <View className="mb-8 mt-10 items-end">
          <Icon/>
         </View>
@@ -62,7 +63,7 @@ export default function Role() {
             lightColor={theme.text}
             darkColor={theme.text}
             // type="medium"
-            className="mb-2 text-center text-[17px] font-[300]">
+            className="mb-2 text-left text-[17px] font-[300]">
             Choose your role for the best experience in the app!
           </ThemedText>
         </View>
@@ -139,7 +140,8 @@ export default function Role() {
             </View>
           </TouchableWithoutFeedback>
         </View>
-        <View className='mt-[300px]'>
+        </View>
+        <View className=''>
    <CustomButton  primary title="Start Using the App " onPress={() => router.push('/signup')} />
     </View>
         {/* Continue Button (Optional) */}

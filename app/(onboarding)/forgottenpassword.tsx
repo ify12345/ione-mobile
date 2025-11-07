@@ -30,7 +30,7 @@ import SafeAreaScreen from '@/components/SafeAreaScreen';
 import { Colors } from '@/constants/Colors';
 import { Icon } from '@/components/ui/Icon';
 
-const { width } = Dimensions.get('screen');
+const { height, width } = Dimensions.get('screen');
 
 export default function ForgottenPassword() {
   const colorScheme = useColorScheme();
@@ -40,15 +40,16 @@ export default function ForgottenPassword() {
   const router = useRouter();
 
   return (
-    <SafeAreaScreen className="mt-[52px]">
+    <SafeAreaScreen className="flex-1">
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
           paddingHorizontal: 21,
-          paddingBottom: 40,
+          paddingBottom: 20,
           flexGrow: 1,
-          justifyContent: 'center',
+          justifyContent: 'space-between',
         }}>
+          <View className='w-full items-center mt-[3%]'>
         <View className="mb-8 items-center">
           {/* <Image
             source={require('@/assets/images/icon.png')}
@@ -73,13 +74,14 @@ export default function ForgottenPassword() {
             Enter your email to reset password
           </ThemedText>
         </View>
-        <View className="mt-[20px] items-center">
+       
           <Image
             source={require('@/assets/images/thinking.png')}
-            className="h-[352px] px-8 max-w-[253px]"
-            resizeMode="contain"
+            resizeMode='contain'
+         className="w-[100%] mt-[3%]"
+            style={{ height: height * 0.4 }}
           />
-        </View>
+      </View>
         <View className="">
           <View className="flex-1">
             {/* Email Input */}
@@ -117,9 +119,4 @@ export default function ForgottenPassword() {
   );
 }
 
-const styles = StyleSheet.create({
-  logo: {
-    width: 130,
-    height: 60,
-  },
-});
+
