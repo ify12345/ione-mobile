@@ -14,6 +14,7 @@ export function ThemedText({
   style,
   lightColor,
   darkColor,
+  className,
   type = 'default',
   ...rest
 }: ThemedTextProps) {
@@ -21,6 +22,7 @@ export function ThemedText({
 
   return (
     <Text
+    className={className} 
       style={[
         { color },
         type === 'default' ? styles.default : undefined,

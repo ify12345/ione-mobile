@@ -3,18 +3,11 @@
 import React from 'react';
 import { View, FlatList, ListRenderItem, TouchableOpacity } from 'react-native';
 import { ThemedText } from './ThemedText';
+import { router } from 'expo-router';
 import RightArrrow from '@/assets/svg/RightArrow';
 import Polygon from './Polygon';
+import { Fixture } from './typings';
 
-type Fixture = {
-    id: number;
-    time: string;
-    teamA: string;
-    teamAName: string;
-    teamB: string;
-    teamBName: string;
-    type: string;
-};
 
 const fixtures: Fixture[] = [
     {
@@ -37,10 +30,26 @@ const fixtures: Fixture[] = [
     },
 ];
 
+  const handleFixturePress = (fixture: Fixture) => {
+        router.push({
+            pathname: '/fixtureDetails',
+            params: {
+                id: fixture.id,
+                time: fixture.time,
+                teamA: fixture.teamA,
+                teamAName: fixture.teamAName,
+                teamB: fixture.teamB,
+                teamBName: fixture.teamBName,
+                type: fixture.type,
+            },
+        });
+    };
+
 const FixtureList: React.FC = () => {
     const renderItem: ListRenderItem<Fixture> = ({ item }) => (
         <TouchableOpacity
             className="dark:bg-gray-800 rounded-[5px] py-[10px] px-[25px] flex-col  justify-between gap-[7px] shadow-xl bg-[#EDFFF8] "
+             onPress={() => handleFixturePress(item)}
         >
             <View className='flex flex-row justify-between items-center'>
 
