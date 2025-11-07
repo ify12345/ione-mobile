@@ -243,7 +243,7 @@ export default function Schedule() {
         {isActive ? (
           <View className="relative h-full w-full">
             <Image
-              source={require('@/assets/images/active.png')}
+              source={require('@/assets/images/activepolygon.png')}
               resizeMode="contain"
               className="h-full w-full"
             />
