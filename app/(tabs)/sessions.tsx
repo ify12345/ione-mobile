@@ -276,35 +276,53 @@ export default function Schedule() {
 
   // Match Card Component
   const ScheduleMatchCard = ({ match }: { match: Match }) => (
-    <View className="border-b border-gray-200 p-4">
-      <View className="mb-3 flex-row justify-between">
-        <Text className="text-sm text-gray-500">{match.teams.matchType}</Text>
-        <Text className="text-sm font-medium">{match.time}</Text>
-      </View>
-
-      <View className="mb-3 flex-row items-center justify-between">
-        <View className="flex-1 flex-row items-center gap-2">
-          <View className="h-8 w-8 items-center justify-center rounded-full bg-gray-100">
-            <Text className="text-xs font-bold text-gray-700">{match.teams.team1.initials}</Text>
-          </View>
-          <Text className="flex-1 text-sm font-medium">{match.teams.team1.name}</Text>
-          <Text className="text-base font-bold text-[#00FF94]">{match.team1score}</Text>
-        </View>
-
-        <Text className="mx-2 text-xs font-medium text-gray-500">VS</Text>
-
-        <View className="flex-1 flex-row items-center justify-end gap-2">
-          <Text className="text-base font-bold text-[#00FF94]">{match.team2score}</Text>
-          <Text className="flex-1 text-right text-sm font-medium">{match.teams.team2.name}</Text>
-          <View className="h-8 w-8 items-center justify-center rounded-full bg-gray-100">
-            <Text className="text-xs font-bold text-gray-700">{match.teams.team2.initials}</Text>
+    <View className="border-b border-gray-200 p-3">
+      <View className="mb-3 flex-row justify-between"></View>
+<View className="mb-3 flex w-full flex-row items-center justify-between">
+  <Text className="origin-center rotate-[-90deg] text-sm font-medium">{match.time}</Text>
+  <View className="w-full flex-1 flex-col relative items-start gap-2 whitespace-nowrap border-l-[1px] border-[#DFDFDF] pl-4">
+    {/* First Team Row */}
+    <View className='flex-row flex-1 items-center justify-between w-full pr-[23px]'> {/* Added pr-4 here */}
+      <View className="flex flex-row items-center gap-2">
+        <View className="h-8 w-8 items-center justify-center">
+          <Image
+            source={require('@/assets/images/dropdownpolygon.png')}
+            resizeMode="contain"
+            className="h-full w-full"
+          />
+          <View className="absolute inset-0 items-center justify-center">
+            <Text className="text-xs font-bold text-black">{match.teams.team1.initials}</Text>
           </View>
         </View>
+        <Text className="flex-1 text-sm font-medium">{match.teams.team1.name}</Text>
       </View>
+      <Text className="text-[12px] font-bold text-b">{match.team1score}</Text>
+    </View>
 
-      <View className="items-center">
-        <Text className="text-xs font-medium text-gray-500">{match.minute}</Text>
+    {/* Minute Indicator - Adjusted positioning */}
+    <View className="absolute right-[50px] top-0 bottom-0 border-[#DFDFDF] border-r-[1px] px-3 justify-center"> {/* Changed right-[50px] to right-[70px] */}
+      <Text className="text-sm font-medium text-black">{match.minute}</Text>
+    </View>
+
+    {/* Second Team Row */}
+   <View className='flex-row flex-1 items-center justify-between w-full pr-[23px]'> {/* Added pr-4 here */}
+      <View className="flex flex-row items-center gap-2">
+        <View className="h-8 w-8 items-center justify-center">
+          <Image
+            source={require('@/assets/images/dropdownpolygon.png')}
+            resizeMode="contain"
+            className="h-full w-full"
+          />
+          <View className="absolute inset-0 items-center justify-center">
+            <Text className="text-xs font-bold text-black">{match.teams.team2.initials}</Text>
+          </View>
+        </View>
+        <Text className="flex-1 text-sm font-medium">{match.teams.team2.name}</Text>
       </View>
+      <Text className="text-[12px] font-bold text-black">{match.team2score}</Text>
+    </View>
+  </View>
+</View>
     </View>
   );
 
@@ -318,7 +336,7 @@ export default function Schedule() {
   return (
     <SafeAreaScreen>
       <ScrollView
-        className="flex-1"
+        className="mb-[40px] h-full flex-1"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
           paddingBottom: 40,
@@ -392,7 +410,7 @@ export default function Schedule() {
             </View>
 
             {/* Dynamic Content - Remove the inner ScrollView and use View instead */}
-            <View className="flex-1 mt-[33px]">
+            <View className="mt-[33px] flex-1">
               {activeTab === 'all' && (
                 <View className="gap-4">
                   {groupedMatchesAll.map((teamSchedule) => (
@@ -472,7 +490,7 @@ export default function Schedule() {
                     <View
                       key={teamSchedule.teamName}
                       className="overflow-hidden rounded-md bg-[#ECFFF8]">
-                     <Pressable
+                      <Pressable
                         className={`relative flex-row items-center justify-between border-b-2 px-[21px] py-[23px] ${expandedFriendlies[teamSchedule.teamName] ? 'border-[#DFDFDF]' : 'rounded-b-md border-[#00FF94]'}`}
                         onPress={() => toggleFriendlies(teamSchedule.teamName)}>
                         <View className="flex-row items-center gap-3">
@@ -508,7 +526,7 @@ export default function Schedule() {
                     <View
                       key={teamSchedule.teamName}
                       className="overflow-hidden rounded-md bg-[#ECFFF8]">
-                     <Pressable
+                      <Pressable
                         className={`relative flex-row items-center justify-between border-b-2 px-[21px] py-[23px] ${expandedSets[teamSchedule.teamName] ? 'border-[#DFDFDF]' : 'rounded-b-md border-[#00FF94]'}`}
                         onPress={() => toggleSets(teamSchedule.teamName)}>
                         <View className="flex-row items-center gap-3">
