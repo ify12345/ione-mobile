@@ -21,6 +21,8 @@ import CalendarIcon from '@/assets/svg/CalendarIcon';
 import PlusIcon from '@/assets/svg/PlusIcon';
 import CloseIcon from '@/assets/svg/CloseIcon';
 import OpenIcon from '@/assets/svg/OpenIcon';
+import { push } from 'expo-router/build/global-state/routing';
+import { router } from 'expo-router';
 
 type RootStackParamList = {
   ScheduleDetail: undefined;
@@ -344,7 +346,7 @@ export default function Schedule() {
         }}>
         <View className="flex-col gap-4 lg:flex-row">
           {/* Left Section - Calendar */}
-          <View className="w-full lg:w-5/12">
+          <View className="w-full ">
             <View className="flex flex-col gap-[25px] px-[32px] py-6">
               <View className="mb-6 flex-row items-center justify-between">
                 <ThemedText
@@ -380,7 +382,7 @@ export default function Schedule() {
           <View className="mt-[18px] px-[32px]">
             <TouchableOpacity
               className="flex w-full flex-row items-center justify-between rounded-[5px] border border-[#7D7D7D] px-[21px] py-[15px]"
-              onPress={() => navigation.navigate('ScheduleDetail')}>
+              onPress={() => router.push('/newsession')}>
               <Text className="text-base text-[#696969]">New game? </Text>
               <PlusIcon />
             </TouchableOpacity>
