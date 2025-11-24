@@ -22,13 +22,7 @@ export default function Loader({ visible }: Prop) {
         <View className='flex-col justify-center items-center flex-1'>
 
           <LottieView source={require('@/assets/lottie/loader.json')} autoPlay loop style={styles.svg} />
-           <ThemedText
-          lightColor='#fff'
-          darkColor={theme.text}
-          className="text-base"
-        >
-         Loading...
-        </ThemedText>
+  
         </View>
 
         <ThemedText
