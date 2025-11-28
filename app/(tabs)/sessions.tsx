@@ -70,10 +70,12 @@ type ExpandedState = Record<string, boolean>;
 // 🔥 TAB → ID Mapping (added)
 const TAB_ROUTE_MAP = {
   all: null,
-  tournaments: 'tournament',
-  friendlies: 'friendly',
-  sets: 'set',
+  tournaments: 'screens/newsession',   // 👈 tournaments tab = new session screen
+  friendlies: 'screens/friendly',
+  sets: 'screens/set',
 };
+
+
 
 export default function Schedule() {
   const [expandedAll, setExpandedAll] = useState<ExpandedState>({
@@ -384,11 +386,17 @@ export default function Schedule() {
               className="flex w-full flex-row items-center justify-between rounded-[5px] border border-[#7D7D7D] px-[21px] py-[15px]"
               
               // 🚀 UPDATED BUTTON — now routes with ID
-              onPress={() => {
-                const tabId = TAB_ROUTE_MAP[activeTab];
-                if (!tabId) return router.push('/newsession');
-                router.push(`/${tabId}`);
-              }}
+            onPress={() => {
+  const tabId = TAB_ROUTE_MAP[activeTab];
+
+  if (!tabId) {
+    // For the "all" tab → route to newsession screen
+    return router.push('/screens/newsession');
+  }
+
+  router.push(`/${tabId}`);
+}}
+
             >
               <Text className="text-base text-[#696969]">New game? </Text>
               <PlusIcon />
