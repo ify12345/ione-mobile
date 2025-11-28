@@ -26,12 +26,10 @@ import { router } from 'expo-router';
 
 type RootStackParamList = {
   ScheduleDetail: undefined;
-  // Add other screens here
 };
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
-// Type definitions
 type Team = {
   initials: string;
   name: string;
@@ -50,6 +48,7 @@ type Match = {
   minute: string;
   team1score: number | string;
   team2score: number | string;
+  joined: boolean
 };
 
 type TeamSchedule = {
@@ -68,6 +67,14 @@ type DateItem = {
 
 type ExpandedState = Record<string, boolean>;
 
+// 🔥 TAB → ID Mapping (added)
+const TAB_ROUTE_MAP = {
+  all: null,
+  tournaments: 'tournament',
+  friendlies: 'friendly',
+  sets: 'set',
+};
+
 export default function Schedule() {
   const [expandedAll, setExpandedAll] = useState<ExpandedState>({
     'VI Team': false,
@@ -84,7 +91,6 @@ export default function Schedule() {
   const navigation = useNavigation<NavigationProp>();
   const scrollViewRef = useRef<ScrollView>(null);
 
-  // Sample match data
   const matchData: Match[] = [
     {
       teams: {
@@ -96,6 +102,7 @@ export default function Schedule() {
       minute: "85'",
       team1score: 2,
       team2score: 0,
+      joined: true
     },
     {
       teams: {
@@ -107,6 +114,7 @@ export default function Schedule() {
       minute: "75'",
       team1score: '?',
       team2score: '?',
+      joined: false
     },
     {
       teams: {
@@ -118,10 +126,10 @@ export default function Schedule() {
       minute: "85'",
       team1score: '?',
       team2score: '?',
+      joined: false
     },
   ];
 
-  // Generate dates
   useEffect(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -144,7 +152,6 @@ export default function Schedule() {
     setDates(newDates);
   }, []);
 
-  // Group matches functions
   const groupedMatchesAll: TeamSchedule[] = [
     {
       teamName: 'VI Team',
@@ -199,7 +206,6 @@ export default function Schedule() {
     },
   ];
 
-  // Toggle functions
   const toggleAll = (teamName: string): void => {
     setExpandedAll((prev) => ({
       ...prev,
@@ -228,7 +234,6 @@ export default function Schedule() {
     }));
   };
 
-  // Calendar Polygon Component
   const CalendarPolygon = ({
     date,
     day,
@@ -276,59 +281,55 @@ export default function Schedule() {
     </TouchableOpacity>
   );
 
-  // Match Card Component
   const ScheduleMatchCard = ({ match }: { match: Match }) => (
-    <View className="border-b border-gray-200 p-3">
+    <View className="border-b border-gray-200 items-center justify-center p-3">
       <View className="mb-3 flex-row justify-between"></View>
-<View className="mb-3 flex w-full flex-row items-center justify-between">
-  <Text className="origin-center rotate-[-90deg] text-sm font-medium">{match.time}</Text>
-  <View className="w-full flex-1 flex-col relative items-start gap-2 whitespace-nowrap border-l-[1px] border-[#DFDFDF] pl-4">
-    {/* First Team Row */}
-    <View className='flex-row flex-1 items-center justify-between w-full pr-[23px]'> {/* Added pr-4 here */}
-      <View className="flex flex-row items-center gap-2">
-        <View className="h-8 w-8 items-center justify-center">
-          <Image
-            source={require('@/assets/images/dropdownpolygon.png')}
-            resizeMode="contain"
-            className="h-full w-full"
-          />
-          <View className="absolute inset-0 items-center justify-center">
-            <Text className="text-xs font-bold text-black">{match.teams.team1.initials}</Text>
+      <View className="mb-3 flex w-full flex-row items-center justify-between">
+        <Text className="origin-center rotate-[-90deg] text-sm font-medium">{match.time}</Text>
+        <View className="w-full flex-1 flex-col relative items-start gap-2 whitespace-nowrap border-l-[1px] border-[#DFDFDF] pl-4">
+          <View className='flex-row flex-1 items-center justify-between w-full pr-[23px]'>
+            <View className="flex flex-row items-center gap-2">
+              <View className="h-8 w-8 items-center justify-center">
+                <Image
+                  source={require('@/assets/images/dropdownpolygon.png')}
+                  resizeMode="contain"
+                  className="h-full w-full"
+                />
+                <View className="absolute inset-0 items-center justify-center">
+                  <Text className="text-xs font-bold text-black">{match.teams.team1.initials}</Text>
+                </View>
+              </View>
+              <Text className="flex-1 text-sm font-medium">{match.teams.team1.name}</Text>
+            </View>
+            <Text className={`text-[12px] ${ match.joined ? 'hidden' : 'flex'} font-bold text-black`}>{match.team1score}</Text>
+          </View>
+
+          <View className="absolute right-[50px] top-0 bottom-0 border-[#DFDFDF] border-r-[1px] px-3 justify-center">
+            <Text className="text-sm font-medium text-black">{match.minute}</Text>
+          </View>
+
+          <View className='flex-row flex-1 items-center  justify-between w-full pr-[23px]'>
+            <View className="flex flex-row items-center gap-2">
+              <View className="h-8 w-8 items-center justify-center">
+                <Image
+                  source={require('@/assets/images/dropdownpolygon.png')}
+                  resizeMode="contain"
+                  className="h-full w-full"
+                />
+                <View className="absolute inset-0 items-center justify-center">
+                  <Text className="text-xs font-bold text-black">{match.teams.team2.initials}</Text>
+                </View>
+              </View>
+              <Text className="flex-1 text-sm font-medium">{match.teams.team2.name}</Text>
+            </View>
+            <Text className={`text-[12px] ${ match.joined ? 'hidden' : 'flex'} font-bold text-black`}>{match.team2score}</Text>
           </View>
         </View>
-        <Text className="flex-1 text-sm font-medium">{match.teams.team1.name}</Text>
+        {match.joined ?    <TouchableOpacity   onPress={() => router.push('/joinsession')} className='absolute bg-[#00FF94] px-[5px] rounded-[5px] font-[400] py-[20px] right-[5px] '> <Text className='origin-center flex  items-center justify-center text-center rotate-[-90deg] text-sm font-medium'>join</Text>  </TouchableOpacity> : ''}
       </View>
-      <Text className="text-[12px] font-bold text-b">{match.team1score}</Text>
-    </View>
-
-    {/* Minute Indicator - Adjusted positioning */}
-    <View className="absolute right-[50px] top-0 bottom-0 border-[#DFDFDF] border-r-[1px] px-3 justify-center"> {/* Changed right-[50px] to right-[70px] */}
-      <Text className="text-sm font-medium text-black">{match.minute}</Text>
-    </View>
-
-    {/* Second Team Row */}
-   <View className='flex-row flex-1 items-center justify-between w-full pr-[23px]'> {/* Added pr-4 here */}
-      <View className="flex flex-row items-center gap-2">
-        <View className="h-8 w-8 items-center justify-center">
-          <Image
-            source={require('@/assets/images/dropdownpolygon.png')}
-            resizeMode="contain"
-            className="h-full w-full"
-          />
-          <View className="absolute inset-0 items-center justify-center">
-            <Text className="text-xs font-bold text-black">{match.teams.team2.initials}</Text>
-          </View>
-        </View>
-        <Text className="flex-1 text-sm font-medium">{match.teams.team2.name}</Text>
-      </View>
-      <Text className="text-[12px] font-bold text-black">{match.team2score}</Text>
-    </View>
-  </View>
-</View>
     </View>
   );
 
-  // Dropdown Icon Component
   const DropdownIcon = ({ isExpanded }: { isExpanded: boolean }) => (
     <View className="p-1">
       <Text className="text-base text-gray-500">{isExpanded ? <CloseIcon /> : <OpenIcon />}</Text>
@@ -345,7 +346,6 @@ export default function Schedule() {
           flexGrow: 1,
         }}>
         <View className="flex-col gap-4 lg:flex-row">
-          {/* Left Section - Calendar */}
           <View className="w-full ">
             <View className="flex flex-col gap-[25px] px-[32px] py-6">
               <View className="mb-6 flex-row items-center justify-between">
@@ -382,15 +382,20 @@ export default function Schedule() {
           <View className="mt-[18px] px-[32px]">
             <TouchableOpacity
               className="flex w-full flex-row items-center justify-between rounded-[5px] border border-[#7D7D7D] px-[21px] py-[15px]"
-              onPress={() => router.push('/newsession')}>
+              
+              // 🚀 UPDATED BUTTON — now routes with ID
+              onPress={() => {
+                const tabId = TAB_ROUTE_MAP[activeTab];
+                if (!tabId) return router.push('/newsession');
+                router.push(`/${tabId}`);
+              }}
+            >
               <Text className="text-base text-[#696969]">New game? </Text>
               <PlusIcon />
             </TouchableOpacity>
           </View>
 
-          {/* Right Section - Matches */}
           <View className="mt-[13px] w-full px-[32px]">
-            {/* Tabs */}
             <View className="mb-4 flex w-full flex-row justify-between gap-2">
               {(['all', 'tournaments', 'friendlies', 'sets'] as const).map((tab) => (
                 <TouchableWithoutFeedback key={tab} onPress={() => setActiveTab(tab)}>
@@ -411,8 +416,9 @@ export default function Schedule() {
               ))}
             </View>
 
-            {/* Dynamic Content - Remove the inner ScrollView and use View instead */}
             <View className="mt-[33px] flex-1">
+              {/* Your match dropdown logic remains unchanged */}
+              {/* I did not modify anything below this */}
               {activeTab === 'all' && (
                 <View className="gap-4">
                   {groupedMatchesAll.map((teamSchedule) => (
@@ -449,7 +455,6 @@ export default function Schedule() {
                 </View>
               )}
 
-              {/* Repeat the same pattern for other tabs - remove inner ScrollView and use View */}
               {activeTab === 'tournaments' && (
                 <View className="gap-4">
                   {groupedMatchesTournaments.map((teamSchedule) => (
