@@ -1,31 +1,34 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   ScrollView,
   useColorScheme,
   TouchableOpacity,
-  Dimensions,
-  Image,
-  TouchableWithoutFeedback,
   Pressable,
-  Modal,
 } from 'react-native';
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
 import SafeAreaScreen from '@/components/SafeAreaScreen';
 import { ThemedText } from '@/components/ThemedText';
-import CustomButton from '@/components/ui/CustomButton';
-import { push } from 'expo-router/build/global-state/routing';
 import { Colors } from '@/constants/Colors';
 import InputField from '@/components/InputField';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useAppDispatch } from '@/redux/store';
+import { createSession } from '@/api/sessions';
+import Toast from 'react-native-toast-message';
+import Loader from '@/components/loader';
 
 export default function NewSession() {
-  const [selectedOptions, setSelectedOptions] = useState({
-    duration: '1',
-    players: '2',
-    rounds: '3',
-  });
+  const params = useLocalSearchParams();
+  const sessionId = params.locationId as string;
+  const dispatch = useAppDispatch();
+  console.log('All params:', params);
+console.log(sessionId)
+  const colorScheme = useColorScheme();
+  const theme = Colors[colorScheme ?? 'light'];
+  const [loading, setLoading] = useState(false);
 
   const [showPicker, setShowPicker] = useState({
     duration: false,
@@ -33,33 +36,88 @@ export default function NewSession() {
     rounds: false,
   });
 
-  const colorScheme = useColorScheme();
-  const theme = Colors[colorScheme ?? 'light'];
-
   // Options for each select input
   const options = {
     duration: Array.from({ length: 10 }, (_, i) => ({ value: (i + 1).toString() })),
-    players: Array.from({ length: 8 }, (_, i) => ({ value: (i + 2).toString() })), // 2-9 players
-    rounds: Array.from({ length: 5 }, (_, i) => ({ value: (i + 1).toString() })), // 1-5 rounds
+    players: Array.from({ length: 8 }, (_, i) => ({ value: (i + 2).toString() })),
+    rounds: Array.from({ length: 5 }, (_, i) => ({ value: (i + 1).toString() })),
   };
 
-  // Custom right icon component for each input
-  const CustomRightIcon: React.FC<{ value: string }> = ({ value }) => (
-    <View className="absolute right-2 flex-row items-center gap-2">
-      <View className="rounded-md border border-[#00000080] px-[10px] py-[7px]">
-        <Text className="text-[11px] font-medium text-black">{value}</Text>
-      </View>
-      <Ionicons name="chevron-down" size={16} color="gray" />
-    </View>
-  );
+  // Formik setup
+  const formik = useFormik({
+    initialValues: {
+      location: '',
+      tournamentName: '',
+      timeDuration: '1',
+      playersPerTeam: '2',
+      setNumber: '3',
+      minsPerSet: '10',
+    },
+    validationSchema: Yup.object({
+      location: Yup.string().required('Location is required'),
+      tournamentName: Yup.string().required('Tournament name is required'),
+      timeDuration: Yup.string().required('Total minutes is required'),
+      playersPerTeam: Yup.string().required('Players per team is required'),
+      setNumber: Yup.string().required('Number of teams is required'),
+      minsPerSet: Yup.string().required('Minutes per set is required'),
+    }),
+    onSubmit: async (values) => {
+      const payload = {
+        sessionId,
+        data: {
+          setNumber: Number(values.setNumber),
+          playersPerTeam: Number(values.playersPerTeam),
+          timeDuration: Number(values.timeDuration),
+          minsPerSet: Number(values.minsPerSet),
+          startTime: new Date().toISOString(),
+          winningDecider: 'highestGoals',
+        },
+      };
+     console.log(payload)
+      setLoading(true);
+      dispatch(createSession(payload))
+        .unwrap()
+        .then((response) => {
+          setLoading(false);
+          console.log(response);
+
+          Toast.show({
+            type: 'success',
+            props: {
+              title: 'Success',
+              message: 'Session created successfully',
+            },
+          });
+
+          setTimeout(() => {
+            router.back();
+          }, 500);
+        })
+        .catch((err) => {
+          setLoading(false);
+          console.log('error is', err);
+          const message = err?.msg?.message || err?.msg || 'Failed to create session';
+
+          Toast.show({
+            type: 'error',
+            props: {
+              title: 'Error',
+              message: message,
+            },
+          });
+        });
+    },
+  });
 
   type PickerField = 'duration' | 'players' | 'rounds';
 
   const handleOptionSelect = (field: PickerField, value: string) => {
-    setSelectedOptions((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    const fieldMap = {
+      duration: 'timeDuration',
+      players: 'playersPerTeam',
+      rounds: 'setNumber',
+    };
+    formik.setFieldValue(fieldMap[field], value);
     setShowPicker((prev) => ({
       ...prev,
       [field]: false,
@@ -74,6 +132,15 @@ export default function NewSession() {
       [field]: !prev[field],
     }));
   };
+
+  const CustomRightIcon: React.FC<{ value: string }> = ({ value }) => (
+    <View className="absolute right-2 flex-row items-center gap-2">
+      <View className="rounded-md border border-[#00000080] px-[10px] py-[7px]">
+        <Text className="text-[11px] font-medium text-black">{value}</Text>
+      </View>
+      <Ionicons name="chevron-down" size={16} color="gray" />
+    </View>
+  );
 
   return (
     <SafeAreaScreen>
@@ -101,8 +168,14 @@ export default function NewSession() {
             className="text-[20px] font-[600] text-black">
             New Session
           </ThemedText>
-          <Text className="text-[16px] font-[500] text-[#0C4D2E]">Next</Text>
+
+          <Pressable onPress={() => formik.handleSubmit()} disabled={loading}>
+            <Text className={`text-[16px] font-[500] ${loading ? 'text-gray-400' : 'text-[#0C4D2E]'}`}>
+              {loading ? 'Creating...' : 'Next'}
+            </Text>
+          </Pressable>
         </View>
+
         <View className="mt-[19px] flex w-full flex-col items-center gap-2 rounded-[4px] bg-[#03EA8926] px-[17px] py-[21px] text-center ">
           <ThemedText darkColor={theme.text} className="text-[14px] text-[#0C4D2E]">
             You are officially the captain of this ball session!
@@ -114,20 +187,27 @@ export default function NewSession() {
             Team Names Will Be Assigned Randomly
           </ThemedText>
         </View>
+
         <View className="mt-[29px]">
           <InputField
             required
             label="Location"
             autoCapitalize="none"
             placeholder="Location"
-            value=""
+            value={formik.values.location}
+            onChangeText={formik.handleChange('location')}
+            onBlur={formik.handleBlur('location')}
+            errorMessage={formik.touched.location && formik.errors.location ? formik.errors.location : ''}
           />
           <InputField
             required
             label="Tournament Name"
             autoCapitalize="none"
             placeholder="Tournament Name"
-            value=""
+            value={formik.values.tournamentName}
+            onChangeText={formik.handleChange('tournamentName')}
+            onBlur={formik.handleBlur('tournamentName')}
+            errorMessage={formik.touched.tournamentName && formik.errors.tournamentName ? formik.errors.tournamentName : ''}
           />
 
           {/* Duration Select Input */}
@@ -140,7 +220,8 @@ export default function NewSession() {
               placeholder=" Total Minutes per Match"
               value=""
               pickerPressed={() => togglePicker('duration')}
-              rightIcon={<CustomRightIcon value={selectedOptions.duration} />}
+              rightIcon={<CustomRightIcon value={formik.values.timeDuration} />}
+              errorMessage={formik.touched.timeDuration && formik.errors.timeDuration ? formik.errors.timeDuration : ''}
             />
 
             {showPicker.duration && (
@@ -151,11 +232,11 @@ export default function NewSession() {
                       key={option.value}
                       className={`px-2 py-2 ${
                         index !== options.duration.length - 1 ? 'border-b border-gray-200' : ''
-                      } ${selectedOptions.duration === option.value ? 'bg-blue-50' : ''}`}
+                      } ${formik.values.timeDuration === option.value ? 'bg-blue-50' : ''}`}
                       onPress={() => handleOptionSelect('duration', option.value)}>
                       <Text
                         className={`text-center ${
-                          selectedOptions.duration === option.value
+                          formik.values.timeDuration === option.value
                             ? 'font-medium text-blue-600'
                             : 'text-gray-700'
                         }`}>
@@ -178,7 +259,8 @@ export default function NewSession() {
               placeholder="Number Of Players per Team"
               value=""
               pickerPressed={() => togglePicker('players')}
-              rightIcon={<CustomRightIcon value={selectedOptions.players} />}
+              rightIcon={<CustomRightIcon value={formik.values.playersPerTeam} />}
+              errorMessage={formik.touched.playersPerTeam && formik.errors.playersPerTeam ? formik.errors.playersPerTeam : ''}
             />
 
             {showPicker.players && (
@@ -189,11 +271,11 @@ export default function NewSession() {
                       key={option.value}
                       className={`px-2 py-2 ${
                         index !== options.players.length - 1 ? 'border-b border-gray-200' : ''
-                      } ${selectedOptions.players === option.value ? 'bg-blue-50' : ''}`}
+                      } ${formik.values.playersPerTeam === option.value ? 'bg-blue-50' : ''}`}
                       onPress={() => handleOptionSelect('players', option.value)}>
                       <Text
                         className={`text-center ${
-                          selectedOptions.players === option.value
+                          formik.values.playersPerTeam === option.value
                             ? 'font-medium text-blue-600'
                             : 'text-gray-700'
                         }`}>
@@ -216,7 +298,8 @@ export default function NewSession() {
               placeholder="Number Of Teams"
               value=""
               pickerPressed={() => togglePicker('rounds')}
-              rightIcon={<CustomRightIcon value={selectedOptions.rounds} />}
+              rightIcon={<CustomRightIcon value={formik.values.setNumber} />}
+              errorMessage={formik.touched.setNumber && formik.errors.setNumber ? formik.errors.setNumber : ''}
             />
 
             {showPicker.rounds && (
@@ -227,11 +310,11 @@ export default function NewSession() {
                       key={option.value}
                       className={`px-2 py-2 ${
                         index !== options.rounds.length - 1 ? 'border-b border-gray-200' : ''
-                      } ${selectedOptions.rounds === option.value ? 'bg-blue-50' : ''}`}
+                      } ${formik.values.setNumber === option.value ? 'bg-blue-50' : ''}`}
                       onPress={() => handleOptionSelect('rounds', option.value)}>
                       <Text
                         className={`text-center ${
-                          selectedOptions.rounds === option.value
+                          formik.values.setNumber === option.value
                             ? 'font-medium text-blue-600'
                             : 'text-gray-700'
                         }`}>
@@ -243,9 +326,21 @@ export default function NewSession() {
               </View>
             )}
           </View>
+
+          {/* Minutes Per Set */}
+          <InputField
+            required
+            label="Minutes Per Set"
+            placeholder="10"
+            keyboardType="numeric"
+            value={formik.values.minsPerSet}
+            onChangeText={formik.handleChange('minsPerSet')}
+            onBlur={formik.handleBlur('minsPerSet')}
+            errorMessage={formik.touched.minsPerSet && formik.errors.minsPerSet ? formik.errors.minsPerSet : ''}
+          />
         </View>
-        {/* Display selected values for testing */}
       </ScrollView>
+      <Loader visible={loading} />
     </SafeAreaScreen>
   );
 }

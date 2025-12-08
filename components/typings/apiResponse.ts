@@ -99,3 +99,26 @@ export interface logoutResponse {
   success: boolean;
   message: string;
 }
+
+export interface MatchSession {
+  _id: string
+  session: string
+  teamOne?: Team
+  teamTwo?: Team
+  teamOneScore: number
+  teamTwoScore: number
+  initials?: string
+  matchType: string
+  isStarted: boolean
+  __v: number
+}
+
+export interface AllSessionsResponse {
+  pagination: {
+    limit: number
+    page: number
+    total: number
+    totalPages: number
+  }
+  sessions: MatchSession[]
+}

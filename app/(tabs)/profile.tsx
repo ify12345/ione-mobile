@@ -11,7 +11,7 @@ import Fontisto from '@expo/vector-icons/Fontisto';
 import { useRouter } from 'expo-router';
 import Feather from '@expo/vector-icons/Feather';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   Dimensions,
   ScrollView,
@@ -24,8 +24,47 @@ import { Image } from 'expo-image';
 import * as SecureStore from 'expo-secure-store';
 import Toast from 'react-native-toast-message';
 import { logout } from '@/redux/reducers/auth';
-import { persistor, useAppDispatch } from '@/redux/store';
+import { persistor, useAppDispatch, useAppSelector } from '@/redux/store';
 
+// Helper function to format date
+const formatDate = (dateString: string) => {
+  if (!dateString) return 'Not set';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', { 
+    month: '2-digit', 
+    day: '2-digit',
+    year: 'numeric'
+  });
+};
+
+// Helper function to convert height from cm to feet/inches
+const convertHeightToFeet = (cm: number) => {
+  if (!cm) return 'Not set';
+  const inches = cm * 0.393701;
+  const feet = Math.floor(inches / 12);
+  const remainingInches = Math.round(inches % 12);
+  return `${feet}ft ${remainingInches}in`;
+};
+
+// Helper function to get position name
+const getPositionName = (positionCode: string) => {
+  const positions: { [key: string]: string } = {
+    'GK': 'Goalkeeper',
+    'DF': 'Defender',
+    'MF': 'Midfielder',
+    'FW': 'Forward',
+    'ST': 'Striker',
+    'CM': 'Central Midfielder',
+    'CDM': 'Defensive Midfielder',
+    'CAM': 'Attacking Midfielder',
+    'LW': 'Left Winger',
+    'RW': 'Right Winger',
+    'CB': 'Center Back',
+    'LB': 'Left Back',
+    'RB': 'Right Back',
+  };
+  return positions[positionCode] || positionCode || 'Not set';
+};
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -33,8 +72,28 @@ export default function ProfileScreen() {
   const colorScheme = useColorScheme();
   const { width, height } = Dimensions.get('window');
   const iconColor = colorScheme === 'dark' ? '#F5FFF2BA' : '#1C1C1C';
-  const itemIconColor = colorScheme === 'dark' ? '#ffffff' : '#fff';
   const [isLoading, setIsLoading] = useState(false);
+  const { user } = useAppSelector((state) => state.auth);
+  
+  // Memoized user data formatting
+  const formattedUserData = useMemo(() => {
+    if (!user) return null;
+    
+    return {
+      firstName: user.firstName || 'Not set',
+      lastName: user.lastName || 'Not set',
+      nickname: user.nickname || 'Not set',
+      dateOfBirth: formatDate(user.dateOfBirth || ''),
+      height: convertHeightToFeet(user.height || 0),
+      placeOfBirth: user.placeOfBirth || 'Not set',
+      position: getPositionName(user.position || ''),
+      email: user.email || 'Not set',
+      phoneNumber: user.phoneNumber || 'Not set',
+      address: user.locationInfo?.address || 'Not set',
+      isCaptain: user.isCaptain ? 'Yes' : 'No',
+      isAdmin: user.isAdmin ? 'Yes' : 'No',
+    };
+  }, [user]);
 
   const handleLogout = async () => {
     Alert.alert(
@@ -49,25 +108,20 @@ export default function ProfileScreen() {
             try {
               setIsLoading(true);
 
-              // ✅ Retrieve token for API logout if needed
+              // Retrieve token for API logout if needed
               const token = await SecureStore.getItemAsync('i-one');
 
-              // ✅ Dispatch Redux logout to reset auth slice
+              // Dispatch Redux logout to reset auth slice
               dispatch(logout());
 
-              // ✅ Call API to invalidate token if it exists and you have a logout endpoint
-              // if (token) {
-              //   await dispatch(logoutAPI({ token })).unwrap();
-              // }
-
-              // ✅ Remove tokens from SecureStore
+              // Remove tokens from SecureStore
               await SecureStore.deleteItemAsync('i-one');
               await SecureStore.deleteItemAsync('user-data');
 
-              // ✅ Clear Redux persist storage
+              // Clear Redux persist storage
               await persistor.purge();
 
-              // ✅ Navigate back to onboarding or login
+              // Navigate back to onboarding or login
               router.replace('/(onboarding)/signin');
 
               Toast.show({
@@ -96,9 +150,19 @@ export default function ProfileScreen() {
     );
   };
 
+  if (!user || !formattedUserData) {
+    return (
+      <SafeAreaScreen>
+        <View className="flex-1 justify-center items-center">
+          <ThemedText>Loading profile...</ThemedText>
+        </View>
+      </SafeAreaScreen>
+    );
+  }
+
   return (
     <SafeAreaScreen className="py-6 px-4 gap-5">
-      <View className='w-full px-[35px] gap-[35px]'>
+      <View className='w-full px-[35px] gap-4'>
         <View className='flex-row justify-between flex items-center w-full'>
           <ThemedText className='text-2xl font-semibold'>Profile</ThemedText>
           <View className='flex-row gap-4 items-center'>
@@ -126,49 +190,85 @@ export default function ProfileScreen() {
           style={{ width: width - 70, height: height * 0.4, alignSelf: 'center' }}
         />
 
-        <ThemedText className='text-2xl font-semibold'>Ororo</ThemedText>
+        {/* Use nickname or full name as the display name */}
+        <ThemedText className='text-2xl font-semibold'>
+          {user.nickname || `${user.firstName} ${user.lastName}`}
+        </ThemedText>
 
-        <ScrollView className='mt-[10px] border-t border-black/19 dark:border-gray-400 py-8 flex gap-[34px]'>
-          <View className='flex flex-row gap-[44px] items-center mb-9'>
-            <View className='flex flex-row gap-4 items-center'>
+        <ScrollView className='border-t border-black/19 dark:border-gray-400 py-8 flex gap-5'>
+          {/* Personal Information */}
+          <View className='flex flex-row gap-[44px] items-center mb-4 justify-between'>
+            <View className='flex flex-row gap-2 items-center'>
               <ThemedText className='text-xs'>First Name:</ThemedText>
-              <ThemedText className='text-sm font-medium'>John</ThemedText>
+              <ThemedText className='text-sm font-medium'>{formattedUserData.firstName}</ThemedText>
             </View>
 
-            <View className='flex flex-row gap-4 items-center'>
+            <View className='flex flex-row gap-2 items-center'>
               <ThemedText className='text-xs'>Last Name:</ThemedText>
-              <ThemedText className='text-sm font-medium'>Doe</ThemedText>
+              <ThemedText className='text-sm font-medium'>{formattedUserData.lastName}</ThemedText>
             </View>
           </View>
 
-          <View className='flex flex-row gap-[44px] items-center mb-9'>
-            <View className='flex flex-row gap-4 items-center'>
+          <View className='flex flex-row gap-[44px] items-center mb-4 justify-between'>
+            <View className='flex flex-row gap-2 items-center'>
               <ThemedText className='text-xs'>Nickname:</ThemedText>
-              <ThemedText className='text-sm font-medium'>Ororo</ThemedText>
+              <ThemedText className='text-sm font-medium'>{formattedUserData.nickname}</ThemedText>
             </View>
 
-            <View className='flex flex-row gap-4 items-center'>
-              <ThemedText className='text-xs'>DOB:</ThemedText>
-              <ThemedText className='text-sm font-medium'>07.10.1999</ThemedText>
+            <View className='flex flex-row gap-2 items-center'>
+              <ThemedText className='text-xs'>Date of Birth:</ThemedText>
+              <ThemedText className='text-sm font-medium'>{formattedUserData.dateOfBirth}</ThemedText>
             </View>
           </View>
 
-          <View className='flex flex-row gap-[44px] items-center mb-9'>
-            <View className='flex flex-row gap-4 items-center'>
+          <View className='flex flex-row gap-[44px] items-center mb-4 justify-between'>
+            <View className='flex flex-row gap-2 items-center'>
               <ThemedText className='text-xs'>Height:</ThemedText>
-              <ThemedText className='text-sm font-medium'>5ft 3inch</ThemedText>
+              <ThemedText className='text-sm font-medium'>{formattedUserData.height}</ThemedText>
             </View>
 
-            <View className='flex flex-row gap-4 items-center'>
-              <ThemedText className='text-xs'>POB:</ThemedText>
-              <ThemedText className='text-sm font-medium'>Brazil</ThemedText>
+            <View className='flex flex-row gap-2 items-center'>
+              <ThemedText className='text-xs'>Place of Birth:</ThemedText>
+              <ThemedText className='text-sm font-medium'>{formattedUserData.placeOfBirth}</ThemedText>
             </View>
           </View>
 
-          <View className='flex flex-row gap-[44px] items-center mb-9'>
-            <View className='flex flex-row gap-4 items-center'>
+          {/* Football Information */}
+          <View className='flex flex-row gap-[44px] items-center mb-4 justify-between'>
+            <View className='flex flex-row gap-42items-center'>
               <ThemedText className='text-xs'>Position:</ThemedText>
-              <ThemedText className='text-sm font-medium'>Striker</ThemedText>
+              <ThemedText className='text-sm font-medium'>{formattedUserData.position}</ThemedText>
+            </View>
+            
+            <View className='flex flex-row gap-2 items-center'>
+              <ThemedText className='text-xs'>Captain:</ThemedText>
+              <ThemedText className='text-sm font-medium'>{formattedUserData.isCaptain}</ThemedText>
+            </View>
+          </View>
+
+          {/* Contact Information */}
+          <View className='flex flex-row gap-[44px] items-center mb-4 justify-between'>
+            <View className='flex flex-row gap-2 items-center'>
+              <ThemedText className='text-xs'>Email:</ThemedText>
+              <ThemedText className='text-sm font-medium'>{formattedUserData.email}</ThemedText>
+            </View>
+
+            <View className='flex flex-row gap-2 items-center'>
+              <ThemedText className='text-xs'>Phone:</ThemedText>
+              <ThemedText className='text-sm font-medium'>{formattedUserData.phoneNumber}</ThemedText>
+            </View>
+          </View>
+
+          {/* Additional Information */}
+          <View className='flex flex-row gap-[44px] items-center mb-4 justify-between'>
+            <View className='flex flex-row gap-2 items-center'>
+              <ThemedText className='text-xs'>Address:</ThemedText>
+              <ThemedText className='text-sm font-medium'>{formattedUserData.address}</ThemedText>
+            </View>
+
+            <View className='flex flex-row gap-2 items-center'>
+              <ThemedText className='text-xs'>Admin:</ThemedText>
+              <ThemedText className='text-sm font-medium'>{formattedUserData.isAdmin}</ThemedText>
             </View>
           </View>
         </ScrollView>

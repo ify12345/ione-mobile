@@ -4,63 +4,43 @@ import React from 'react';
 import { View, FlatList, ListRenderItem, TouchableOpacity } from 'react-native';
 import { ThemedText } from './ThemedText';
 import { router } from 'expo-router';
-import RightArrrow from '@/assets/svg/RightArrow';
+import RightArrow from '@/assets/svg/RightArrow';
 import Polygon from './Polygon';
 import { Fixture } from './typings';
+import { useAppSelector } from '@/redux/store';
 
+const FixtureList: React.FC = () => {
+    const { sessions } = useAppSelector((state) => state.sessions);
 
-const fixtures: Fixture[] = [
-    {
-        id: 1,
-        time: '14:00',
-        teamA: 'TN',
-        teamAName: 'Team Name',
-        teamB: 'TN',
-        teamBName: 'Team Name',
-        type: 'Friendly Match',
-    },
-    {
-        id: 2,
-        time: '16:30',
-        teamA: 'TN',
-        teamAName: 'Team Name',
-        teamB: 'TN',
-        teamBName: 'Team Name',
-        type: 'Friendly Match',
-    },
-];
+    // Transform backend sessions → Fixture format
+    const fixtures: Fixture[] = sessions.map((s) => ({
+        id: s._id,
+        time: "14:00", // placeholder until backend sends actual match time
+        teamA: s.teamOne?.name?.slice(0, 2).toUpperCase() || "NA",
+        teamAName: s.teamOne?.name || "Unknown",
+        teamB: s.teamTwo?.name?.slice(0, 2).toUpperCase() || "NA",
+        teamBName: s.teamTwo?.name || "Unknown",
+        type: s.matchType || "Match",
+    }));
 
-  const handleFixturePress = (fixture: Fixture) => {
+    const handleFixturePress = (fixture: Fixture) => {
         router.push({
             pathname: '/fixtureDetails',
-            params: {
-                id: fixture.id,
-                time: fixture.time,
-                teamA: fixture.teamA,
-                teamAName: fixture.teamAName,
-                teamB: fixture.teamB,
-                teamBName: fixture.teamBName,
-                type: fixture.type,
-            },
+            params: fixture,
         });
     };
 
-const FixtureList: React.FC = () => {
     const renderItem: ListRenderItem<Fixture> = ({ item }) => (
         <TouchableOpacity
-            className="dark:bg-gray-800 rounded-[5px] py-[10px] px-[25px] flex-col  justify-between gap-[7px] shadow-xl bg-[#EDFFF8] "
-             onPress={() => handleFixturePress(item)}
+            className="dark:bg-gray-800 rounded-[5px] py-[10px] px-[25px] flex-col justify-between gap-[7px] shadow-xl bg-[#EDFFF8]"
+            onPress={() => handleFixturePress(item)}
         >
-            <View className='flex flex-row justify-between items-center'>
-
+            <View className="flex flex-row justify-between items-center">
                 <ThemedText className="text-xs">{item.time}</ThemedText>
-
-                <View className="items-center">
-                    <ThemedText className="text-xs text-gray-600 dark:text-gray-400">
-                        {item.type}
-                    </ThemedText>
-                </View>
-               <RightArrrow/>
+                <ThemedText className="text-xs text-gray-600 dark:text-gray-400">
+                    {item.type}
+                </ThemedText>
+                <RightArrow />
             </View>
 
             <View className="flex-row items-center gap-4 justify-center">
@@ -84,7 +64,11 @@ const FixtureList: React.FC = () => {
             data={fixtures}
             keyExtractor={(item) => item.id.toString()}
             renderItem={renderItem}
-            contentContainerStyle={{ gap: 12 }}
+            contentContainerStyle={{
+                gap: 12,
+                marginBottom: 70
+            }}
+            
             showsVerticalScrollIndicator={false}
         />
     );

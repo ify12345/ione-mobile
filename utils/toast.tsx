@@ -3,7 +3,6 @@ import React, {ReactNode} from 'react';
 import {View, StyleSheet} from 'react-native';
 
 import Feather from '@expo/vector-icons/Feather';
-import AntDesign from '@expo/vector-icons/AntDesign';
 import { ThemedText } from '@/components/ThemedText';
 
 type ToastProps = {
@@ -15,11 +14,7 @@ type ToastProps = {
 const toastConfig = {
   error: ({props}: {props: ToastProps}) => (
     <View style={[styles.toast, styles.errorToast]}>
-      {props.icon || (
-        <View style={[styles.iconWrapper, styles.errorIconWrapper]}>
-          <AntDesign name="exclamation" size={24} color="#FFFFFF" />
-        </View>
-      )}
+    
       <View style={styles.details}>
         {props.title && (
           <ThemedText lightColor='#991B1B' darkColor='#991B1B' style={styles.errorTitle}>
