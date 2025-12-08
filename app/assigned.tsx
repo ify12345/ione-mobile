@@ -4,17 +4,18 @@ import SafeAreaScreen from '@/components/SafeAreaScreen';
 import { ThemedText } from '@/components/ThemedText';
 import { Colors } from '@/constants/Colors';
 
-import RightArrrow from '@/assets/svg/RightArrow';
 import OpenIcon from '@/assets/svg/OpenIcon';
 import PitchIcon from '@/assets/svg/PitchSvg';
 import PlayerInfoCard from './playerinfocard';
 import BackIcon from '@/assets/svg/BackIcon';
-import { router } from 'expo-router';
+import TeamBoxes from './teamboxes';
 
-export default function JoinSession() {
+export default function Assigned() {
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme ?? 'light'];
   const [showDetails, setShowDetails] = useState(false);
+
+  const [activeTab, setActiveTab] = useState('lineups');
 
   return (
     <SafeAreaScreen>
@@ -27,21 +28,6 @@ export default function JoinSession() {
         }}>
         <View className="flex flex-col gap-[31px]  ">
           <View className="mx-[32px] flex flex-col gap-[31px]">
-            <View className="w-full rounded-[10px] border-[1px] border-[#43B75D] bg-[#ECF8EF] p-[16px]">
-              <View className="flex flex-col gap-[4px]">
-                <ThemedText
-                  lightColor="#6C757D"
-                  darkColor="#9BA1A6"
-                  className="text-[14px] font-[600] leading-[24px]  text-black">
-                  Waiting For Captain
-                </ThemedText>
-                <Text className="text-[11px] text-[#6D717F]">
-                  {' '}
-                  [Player Name] has joined your session
-                </Text>
-              </View>
-            </View>
-
             <View>
               <View className="flex flex-row items-center justify-between">
                 <View>
@@ -78,41 +64,99 @@ export default function JoinSession() {
                 </ThemedText>
               </View>
 
-              <View className="mx-auto mt-[45px]">
-                <TouchableOpacity
-                  className="flex w-[100px] items-center justify-center rounded-[5px] bg-[#00FF94] p-[10px]"
-                  onPress={() => router.push('/captainjoinsession')}>
-                  <Text>Join session</Text>
+              {/* <View className="mx-auto mt-[45px]">
+                <TouchableOpacity className="flex w-[100px]  items-center justify-center rounded-[5px] bg-[#00FF94] p-[10px] text-[10px] font-[400]">
+                  <Text>assign sets</Text>
                 </TouchableOpacity>
-              </View>
+              </View> */}
             </View>
           </View>
 
           <View className="flex flex-row items-center justify-between border-b-[1px] border-t-[1px] border-[#5c5a5a8a] px-[31px] py-[21px]">
             <View className="flex flex-row gap-[17px]">
-              <ThemedText
-                lightColor={theme.text}
-                darkColor={theme.text}
-                className="text-[15px] font-[500]  text-black">
-                Lineups
-              </ThemedText>
-              <ThemedText
-                lightColor={theme.text}
-                darkColor={theme.text}
-                className="text-[15px] font-[500]  text-black">
-                Squad List
-              </ThemedText>
+              {/* LINEUPS TAB */}
+              <Pressable onPress={() => setActiveTab('lineups')}>
+                <ThemedText
+                  lightColor={activeTab === 'lineups' ? '#000' : '#00000080'}
+                  darkColor={activeTab === 'lineups' ? '#FFF' : '#00000080'}
+                  className={`py-2 text-[15px]  ${activeTab === 'lineups' ? 'border-b-[3px] border-[#00FF94] ' : ''} font-[500]`}>
+                  Lineups
+                </ThemedText>
+              </Pressable>
+
+              {/* SQUAD LIST TAB */}
+              <Pressable onPress={() => setActiveTab('squad')}>
+                <ThemedText
+                  lightColor={activeTab === 'squad' ? '#000' : '#00000080'}
+                  darkColor={activeTab === 'squad' ? '#FFF' : '#00000080'}
+                  className={`py-2 text-[15px]  ${activeTab === 'squad' ? 'border-b-[3px] border-[#00FF94] ' : ''} font-[500]`}>
+                  Squad List
+                </ThemedText>
+              </Pressable>
             </View>
+
             <View>
               <PitchIcon />
             </View>
           </View>
 
-          {/* 👇 PLAYER CARDS */}
-          <PlayerInfoCard name="David" />
-          <PlayerInfoCard name="Ayo" />
-          <PlayerInfoCard name="Bola" />
-          <PlayerInfoCard name="Bola" />
+          <View className="">
+            {/* ⭐ LINEUPS VIEW */}
+            {activeTab === 'lineups' && (
+              <>
+                <View className=' pr-[150px] items-start flex'>
+                  <TeamBoxes />{' '}
+                </View>
+                <View className="mt-[30px] flex flex-col gap-[30px]">
+                  {/* GOALKEEPER */}
+                  <View className="flex flex-col gap-[10px]">
+                    <Text className="mb-2 px-[32px] text-[16px] font-[700]">Goalkeeper</Text>
+                    <PlayerInfoCard name="David" />
+                  </View>
+
+                  {/* MIDFIELDERS */}
+                  <View className="flex flex-col gap-[10px]">
+                    <Text className="mb-2 px-[32px] text-[16px] font-[700]">Midfielders</Text>
+                    <PlayerInfoCard name="Ayo" />
+                    <PlayerInfoCard name="Bola" />
+                  </View>
+
+                  <View className="flex flex-col gap-[10px]">
+                    <Text className="mb-2 px-[32px] text-[16px] font-[700]">Defenders</Text>
+                    <PlayerInfoCard name="Chinedu" />
+                    <PlayerInfoCard name="Umar" />
+                  </View>
+                </View>
+              </>
+            )}
+
+            {/* ⭐ SQUAD LIST VIEW */}
+            {activeTab === 'squad' && (
+              <View className=" flex flex-col gap-[20px]">
+                             {/* GOALKEEPER */}
+                             <View className="flex flex-col gap-[20px]">
+                               <PlayerInfoCard name="David" />
+                               <TeamBoxes />
+                             </View>
+             
+                             {/* MIDFIELDERS */}
+                             <View className="flex flex-col gap-[20px]">
+                               <PlayerInfoCard name="Ayo" />
+                               <TeamBoxes />
+                               <PlayerInfoCard name="Bola" />
+                               <TeamBoxes />
+                             </View>
+             
+                             {/* DEFENDERS */}
+                             <View className="flex flex-col gap-[20px]">
+                               <PlayerInfoCard name="Chinedu" />
+                               <TeamBoxes />
+                               <PlayerInfoCard name="Umar" />
+                               <TeamBoxes />
+                             </View>
+                           </View>
+            )}
+          </View>
         </View>
       </ScrollView>
 
@@ -133,7 +177,7 @@ export default function JoinSession() {
           <View
             style={{
               position: 'absolute',
-              top: 250, // adjust if needed
+              top: 250,
               left: 0,
               right: 0,
               zIndex: 300,
