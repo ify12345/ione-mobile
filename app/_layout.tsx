@@ -5,7 +5,7 @@ import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 import '@/globals.css';
-
+import FlashMessage from "react-native-flash-message";
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
@@ -24,7 +24,7 @@ function AppNavigator() {
   const { isAuthenticated, user, isRegistered, isVerified } = useAppSelector(
     (state) => state.auth
   );
-
+  // console.log('user',user.locationInfo.location.coordinates)
   useEffect(() => {
     if (isAuthenticated && user) {
       router.replace('/(tabs)');
@@ -55,6 +55,8 @@ export default function RootLayout() {
     return null;
   }
 
+
+
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
@@ -65,14 +67,16 @@ export default function RootLayout() {
               <AppNavigator />
       
               <StatusBar style="auto" />
-            </ThemeProvider>
-          </BottomSheetModalProvider>
            <Toast 
             config={toastConfig}
             position="top"
             topOffset={50}
             visibilityTime={4000}
+            autoHide
           />
+          
+            </ThemeProvider>
+          </BottomSheetModalProvider>
         </GestureHandlerRootView>
 
       </PersistGate>

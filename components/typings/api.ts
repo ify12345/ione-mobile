@@ -74,3 +74,6 @@ export interface sessionPayload {
   lng: number
 }
 
+export interface StartSessionRequest {
+  locationId: string;
+}

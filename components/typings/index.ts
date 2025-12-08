@@ -82,6 +82,7 @@ export type Service = 'home_service' | 'walk_in'
 
 export interface User {
   id?: string
+  _id?: string
   outletId?: number
   businessName?: string | null
   firstName?: string
@@ -114,10 +115,19 @@ export interface User {
   role?: Role[]
   token?: string;
   isAdmin?: boolean;
-  location?:{
-    type: string;
-    coordinates: [number, number];
-  }
+  locationInfo? : {
+    location?:{
+      type: string;
+      coordinates: [number, number];
+    },
+    address?:string
+
+  },
+  dateOfBirth?: string
+  height?: number;
+  placeOfBirth?: string
+  address?:string;
+  isCaptain?: boolean
 }
 
 export interface Order {
@@ -210,7 +220,7 @@ export type LineupData = {
 };
 
 export type Fixture = {
-    id: number;
+   id: string;
     time: string;
     teamA: string;
     teamAName: string;

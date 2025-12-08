@@ -25,7 +25,7 @@ async function apiCall(
 ) {
   try {
     const { data } = await asyncFn;
-    console.log('data', data);
+    // console.log('data', data);
     
     if (route === 'auth') {
       const { token, user } = data;
