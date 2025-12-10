@@ -37,7 +37,7 @@ interface Player {
 interface Set {
   _id: string;
   name: string;
-  players: Player[];
+  players: string[];
   session: string;
   createdAt: string;
   updatedAt: string;
@@ -138,10 +138,10 @@ export default function Assigned() {
     if (!currentSet) return [];
 
     // Get player IDs from the selected set
-    const playerIdsInSet = currentSet.players.map((player: Player) => player._id);
+    const playerIdsInSet = currentSet.players;
 
     // Filter members who are in the selected set's players array
-    return members.filter((member: Member) => 
+    return members.filter((member: Member) =>
       playerIdsInSet.includes(member._id)
     );
   };
@@ -155,8 +155,8 @@ export default function Assigned() {
   const strikers = filteredMembers.filter((p: Member) => p.position === 'ST');
 
   // Get current set name
-  const currentSetName = selectedSet 
-    ? sets.find((s: Set) => s._id === selectedSet)?.name 
+  const currentSetName = selectedSet
+    ? sets.find((s: Set) => s._id === selectedSet)?.name
     : null;
 
   return (
@@ -165,7 +165,7 @@ export default function Assigned() {
         className="mb-[40px] h-full flex-1 py-6"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 40, flexGrow: 1 }}>
-        
+
         <View className="flex flex-col gap-[31px]">
           <View className="mx-[32px] flex flex-col gap-[31px]">
             <View>
@@ -221,9 +221,8 @@ export default function Assigned() {
               <Pressable onPress={() => setActiveTab('lineups')}>
                 <ThemedText
                   lightColor={activeTab === 'lineups' ? '#000' : '#00000080'}
-                  className={`py-2 text-[15px] ${
-                    activeTab === 'lineups' ? 'border-b-[3px] border-[#00FF94]' : ''
-                  } font-[500]`}>
+                  className={`py-2 text-[15px] ${activeTab === 'lineups' ? 'border-b-[3px] border-[#00FF94]' : ''
+                    } font-[500]`}>
                   Lineups
                 </ThemedText>
               </Pressable>
@@ -231,9 +230,8 @@ export default function Assigned() {
               <Pressable onPress={() => setActiveTab('squad')}>
                 <ThemedText
                   lightColor={activeTab === 'squad' ? '#000' : '#00000080'}
-                  className={`py-2 text-[15px] ${
-                    activeTab === 'squad' ? 'border-b-[3px] border-[#00FF94]' : ''
-                  } font-[500]`}>
+                  className={`py-2 text-[15px] ${activeTab === 'squad' ? 'border-b-[3px] border-[#00FF94]' : ''
+                    } font-[500]`}>
                   Squad List
                 </ThemedText>
               </Pressable>
@@ -256,8 +254,8 @@ export default function Assigned() {
                 {/* Team Filter Boxes */}
                 {sets.length > 0 && (
                   <View className="mb-[20px]">
-                    <TeamBoxes 
-                      sets={sets} 
+                    <TeamBoxes
+                      sets={sets}
                       selectedSet={selectedSet}
                       onSelectSet={setSelectedSet}
                     />
@@ -357,8 +355,8 @@ export default function Assigned() {
                 {/* Team Filter for Squad List */}
                 {sets.length > 0 && (
                   <View className="mb-[10px]">
-                    <TeamBoxes 
-                      sets={sets} 
+                    <TeamBoxes
+                      sets={sets}
                       selectedSet={selectedSet}
                       onSelectSet={setSelectedSet}
                     />
@@ -378,8 +376,8 @@ export default function Assigned() {
                 {filteredMembers.length > 0 ? (
                   filteredMembers.map((player: Member) => {
                     // Find which set this player belongs to
-                    const playerSet = sets.find((s: Set) => 
-                      s.players.some((p: Player) => p._id === player._id)
+                    const playerSet = sets.find((s: Set) =>
+                      s.players.some((playerId: string) => playerId === player._id)
                     );
 
                     return (
@@ -401,7 +399,7 @@ export default function Assigned() {
                 ) : (
                   <View className="px-[32px] py-8 items-center">
                     <Text className="text-[16px] text-[#2A2A2A] text-center">
-                      {selectedSet 
+                      {selectedSet
                         ? `No players in ${currentSetName}`
                         : 'No players available'
                       }
@@ -425,7 +423,7 @@ export default function Assigned() {
           <View
             style={{ position: 'absolute', top: 250, left: 0, right: 0, zIndex: 300 }}
             className="rounded-[10px] bg-[#F2F2F2] px-[31px] py-[40px] shadow-lg mx-[20px]">
-            
+
             <View className="mb-2 flex flex-row justify-between">
               <Text className="text-[14px] text-[#2A2A2A]">Sets:</Text>
               <Text className="text-[14px] font-[600] text-primary">{data?.setNumber}</Text>

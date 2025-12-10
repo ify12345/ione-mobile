@@ -28,9 +28,8 @@ export default function TeamBoxes({ sets, selectedSet, onSelectSet }: TeamBoxesP
           <Pressable
             key={set._id}
             onPress={() => onSelectSet(isActive ? null : set._id)}
-            className={`w-full flex-1 p-3 rounded-md items-center justify-center ${
-              isActive ? "bg-[#00FF94]" : "bg-[#E4E4E4]"
-            }`}
+            className={`w-full flex-1 p-3 rounded-md items-center justify-center ${isActive ? "bg-[#00FF94]" : "bg-[#E4E4E4]"
+              }`}
           >
             <Text className="text-[12px] font-[600]">{set.name}</Text>
           </Pressable>
