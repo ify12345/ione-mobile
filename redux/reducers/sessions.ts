@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit'
-import { nearBy, nearByLocation, allSessions } from '@/api/sessions'
+import { nearBy, nearByLocation, allSessions, createSets, getSessionSets } from '@/api/sessions'
 import { Team } from '@/components/typings'
 
 export interface MatchSession {
@@ -23,7 +23,16 @@ export interface pitchSessions {
   pitchPhoto: string
 }
 
-// New interface for allSessions response
+export interface Set {
+  _id: string
+  session: string
+  name: string
+  players: string[]
+  status: string
+  createdAt: string
+  updatedAt: string
+}
+
 export interface AllSessionsResponse {
   pagination: {
     limit: number
@@ -37,16 +46,23 @@ export interface AllSessionsResponse {
 interface State {
   sessions: MatchSession[]
   pitches: pitchSessions[]
-  all: MatchSession[] // New field for all sessions
-  pagination: AllSessionsResponse['pagination'] | null // Optional: store pagination info
+  all: MatchSession[]
+  pagination: AllSessionsResponse['pagination'] | null
+  
+  // Sets state
+  sets: Set[]
+  loadingSets: boolean
+  errorSets: string | null
+  creatingSet: boolean
+  errorCreatingSets: string | null
 
   loadingSessions: boolean
   loadingPitches: boolean
-  loadingAll: boolean // New loading state
+  loadingAll: boolean
 
   errorSessions: string | null
   errorPitches: string | null
-  errorAll: string | null // New error state
+  errorAll: string | null
 }
 
 const initialState: State = {
@@ -54,6 +70,13 @@ const initialState: State = {
   pitches: [],
   all: [],
   pagination: null,
+
+  // Sets initial state
+  sets: [],
+  loadingSets: false,
+  errorSets: null,
+  creatingSet: false,
+  errorCreatingSets: null,
 
   loadingSessions: false,
   loadingPitches: false,
@@ -67,7 +90,12 @@ const initialState: State = {
 export const sessionSlice = createSlice({
   name: 'sessions',
   initialState,
-  reducers: {},
+  reducers: {
+    clearSets: (state) => {
+      state.sets = []
+      state.errorSets = null
+    },
+  },
   extraReducers(builder) {
     // 🔥 Nearby sessions (Match sessions)
     builder.addCase(nearBy.pending, (state) => {
@@ -111,7 +139,36 @@ export const sessionSlice = createSlice({
       state.loadingAll = false
       state.errorAll = action.error.message || 'Failed to fetch all sessions'
     })
+
+    // 🔥 Create Sets
+    builder.addCase(createSets.pending, (state) => {
+      state.creatingSet = true
+      state.errorCreatingSets = null
+    })
+    builder.addCase(createSets.fulfilled, (state, { payload }) => {
+      state.sets = payload
+      state.creatingSet = false
+    })
+    builder.addCase(createSets.rejected, (state, action) => {
+      state.creatingSet = false
+      state.errorCreatingSets = action.error.message || 'Failed to create sets'
+    })
+
+    // 🔥 Get Session Sets
+    builder.addCase(getSessionSets.pending, (state) => {
+      state.loadingSets = true
+      state.errorSets = null
+    })
+    builder.addCase(getSessionSets.fulfilled, (state, { payload }) => {
+      state.sets = payload
+      state.loadingSets = false
+    })
+    builder.addCase(getSessionSets.rejected, (state, action) => {
+      state.loadingSets = false
+      state.errorSets = action.error.message || 'Failed to fetch sets'
+    })
   },
 })
 
+export const { clearSets } = sessionSlice.actions
 export default sessionSlice.reducer

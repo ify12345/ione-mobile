@@ -90,3 +90,31 @@ export const joinSession = createAsyncThunk<
     thunkAPI
   );
 });
+
+export const createSets = createAsyncThunk<
+  any[], // Array of created sets
+  { sessionId: string },
+  AsyncThunkConfig
+>('/createSets', async (payload, thunkAPI) => {
+  const { sessionId } = payload;
+  console.log('Creating sets for session:', sessionId);
+
+  return apiCall(
+    axiosInstance.post(`/i-one/sets/create/${sessionId}`),
+    thunkAPI
+  );
+});
+
+export const getSessionSets = createAsyncThunk<
+  any[], // Array of sets
+  { sessionId: string },
+  AsyncThunkConfig
+>('/getSessionSets', async (payload, thunkAPI) => {
+  const { sessionId } = payload;
+  console.log('Fetching sets for session:', sessionId);
+
+  return apiCall(
+    axiosInstance.get(`/i-one/sets/${sessionId}`),
+    thunkAPI
+  );
+});

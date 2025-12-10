@@ -1,24 +1,38 @@
-import React, { useState } from "react";
+import React from "react";
 import { View, Text, Pressable } from "react-native";
 
-export default function TeamBoxes() {
-  const tags = ["T1", "T2", "T3", "T4", "T5"];
-  const [selected, setSelected] = useState<number | null>(null);
+interface Set {
+  _id: string;
+  name: string;
+  players: string[];
+  status: string;
+  session: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface TeamBoxesProps {
+  sets: Set[];
+  selectedSet: string | null;
+  onSelectSet: (setId: string | null) => void;
+}
+
+export default function TeamBoxes({ sets, selectedSet, onSelectSet }: TeamBoxesProps) {
 
   return (
-    <View className="px-[32px] flex flex-row w-full justify-between">
-      {tags.map((item, index) => {
-        const isActive = selected === index;
+    <View className="flex flex-row items-start px-8 gap-5">
+      {sets.map((set) => {
+        const isActive = selectedSet === set._id;
 
         return (
           <Pressable
-            key={index}
-            onPress={() => setSelected(isActive ? null : index)}
-            className={`w-[30px] h-[30px]  items-center justify-center ${
+            key={set._id}
+            onPress={() => onSelectSet(isActive ? null : set._id)}
+            className={`w-full flex-1 p-3 rounded-md items-center justify-center ${
               isActive ? "bg-[#00FF94]" : "bg-[#E4E4E4]"
             }`}
           >
-            <Text className="text-[12px] font-[600]">{item}</Text>
+            <Text className="text-[12px] font-[600]">{set.name}</Text>
           </Pressable>
         );
       })}
