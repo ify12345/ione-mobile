@@ -14,7 +14,7 @@ import { useAppDispatch } from '@/redux/store';
 import Toast from 'react-native-toast-message';
 import { joinSession } from '@/api/sessions';
 import { ActivityIndicator } from 'react-native';
-import { router } from 'expo-router';
+
 
 export default function JoinSession() {
   const colorScheme = useColorScheme();
@@ -278,8 +278,6 @@ export default function JoinSession() {
           <Pressable
             onPress={() => setShowDetails(false)}
             style={{
-              position: "absolute",
-              top: 0, left: 0, right: 0, bottom: 0,
               position: 'absolute',
               top: 0,
               left: 0,
