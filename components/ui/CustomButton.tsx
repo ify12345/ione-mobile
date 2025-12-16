@@ -78,7 +78,7 @@ export default function CustomButton({
       style={[
         styles.button,
         primary
-          ? { backgroundColor: '#46BB1C' } // your primary color
+          ? { backgroundColor: '#00FF94' } // your primary color
           : { backgroundColor: isDark ? '#222' : '#fff', borderWidth: 1, borderColor: isDark ? '#222' : '#46BB1C' },
         buttonDisabled ? { opacity: 0.7 } : {},
         style,
@@ -96,8 +96,8 @@ const styles = StyleSheet.create({
   button: {
     flex: 1,
     borderRadius: 6,
-    paddingVertical: 15,
-    paddingHorizontal: 12,
+    paddingVertical: 18,
+    paddingHorizontal: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',

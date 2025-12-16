@@ -11,14 +11,15 @@ import {
   TextInputFocusEventData,
   TextInputProps,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   useColorScheme,
   View,
   ViewStyle,
 } from 'react-native';
 
-import React, {ReactNode, useState} from 'react';
+import React, { ReactNode, useState } from 'react';
 
-import {Ionicons, Entypo} from '@expo/vector-icons';
+import { Ionicons, Entypo } from '@expo/vector-icons';
 import { ThemedText } from './ThemedText';
 import { Colors } from '@/constants/Colors';
 
@@ -36,7 +37,7 @@ interface Props extends TextInputProps {
   selectPicker?: boolean;
   rightIcon?: ReactNode;
   pickerPressed?: () => void;
-  flagUri?: string; 
+  flagUri?: string;
 }
 
 export default function InputField({
@@ -101,26 +102,23 @@ export default function InputField({
   };
 
   const handlePasswordVisibility = () => {
-    setHidePassword(prevState => !prevState);
+    setHidePassword((prevState) => !prevState);
   };
 
   return (
     <View style={[styles.inputSection]}>
       {label && (
         <View style={styles.labelContainer}>
-          <ThemedText 
-            lightColor={colors.text} 
+          <ThemedText
+            lightColor={colors.text}
             darkColor={colors.text}
-            className="text-base font-medium"
-          >
+            className="text-base font-medium">
             {label}
-            {required && (
-              <Text style={{color: colors.error}}> *</Text>
-            )}
+            {required && <Text style={{ color: colors.error }}> *</Text>}
           </ThemedText>
         </View>
       )}
-      
+
       {/* Regular Text Input */}
       {!password && !isPhoneInput && !selectPicker && (
         <View
@@ -128,7 +126,7 @@ export default function InputField({
             styles.inputContainer,
             {
               borderColor: getBorderColor(),
-              backgroundColor: colors.secondary,
+              // backgroundColor: colors.secondary,
             },
             inputComponentStyle,
           ]}>
@@ -136,7 +134,7 @@ export default function InputField({
             onFocus={handleOnFocus}
             onBlur={handleOnBlur}
             accessibilityLabel={label}
-            style={[styles.input, {color: '#000'}]}
+            style={[styles.input, { color: '#000' }]}
             cursorColor={colors.primary}
             autoCapitalize={autoCapitalize}
             onChangeText={onChangeText}
@@ -153,7 +151,7 @@ export default function InputField({
           />
         </View>
       )}
-      
+
       {/* Password Input */}
       {password && (
         <View
@@ -161,7 +159,7 @@ export default function InputField({
             styles.inputContainer,
             {
               borderColor: getBorderColor(),
-              backgroundColor: colors.secondary,
+              // backgroundColor: colors.secondary,
             },
             inputComponentStyle,
           ]}>
@@ -169,7 +167,7 @@ export default function InputField({
             onFocus={handleOnFocus}
             onBlur={handleOnBlur}
             accessibilityLabel={label}
-            style={[styles.input, styles.passwordInput, {color: '#000'}]}
+            style={[styles.input, styles.passwordInput, { color: '#000' }]}
             cursorColor={colors.primary}
             autoCapitalize="none"
             onChangeText={onChangeText}
@@ -184,15 +182,11 @@ export default function InputField({
             maxLength={maxLength}
           />
           <Pressable hitSlop={20} onPress={handlePasswordVisibility} style={styles.eyeIcon}>
-            <Ionicons 
-              name={!hidePassword ? 'eye' : 'eye-off'} 
-              size={20} 
-              color={colors.icon} 
-            />
+            <Ionicons name={!hidePassword ? 'eye' : 'eye-off'} size={20} color={colors.icon} />
           </Pressable>
         </View>
       )}
-      
+
       {/* Phone Input */}
       {isPhoneInput && (
         <View
@@ -206,37 +200,23 @@ export default function InputField({
           ]}>
           <View style={styles.phoneInputContent}>
             {openCountryModal ? (
-              <TouchableOpacity
-                onPress={openCountryModal}
-                style={styles.countrySelector}>
-                {flagUri && (
-                  <Image
-                    source={{uri: flagUri}}
-                    style={styles.flagImage}
-                  />
-                )}
-                <ThemedText 
-                  lightColor={colors.text} 
-                  darkColor='#000'
-                  className="text-base font-medium"
-                >
+              <TouchableOpacity onPress={openCountryModal} style={styles.countrySelector}>
+                {flagUri && <Image source={{ uri: flagUri }} style={styles.flagImage} />}
+                <ThemedText
+                  lightColor={colors.text}
+                  darkColor="#000"
+                  className="text-base font-medium">
                   {countryCodeValue || 'NGN'}
                 </ThemedText>
                 <Entypo name="chevron-down" size={16} color={colors.icon} />
               </TouchableOpacity>
             ) : (
               <View style={styles.countrySelector}>
-                {flagUri && (
-                  <Image
-                    source={{uri: flagUri}}
-                    style={styles.flagImage}
-                  />
-                )}
-                <ThemedText 
-                  lightColor={colors.text} 
-                  darkColor='#000'
-                  className="text-base font-medium"
-                >
+                {flagUri && <Image source={{ uri: flagUri }} style={styles.flagImage} />}
+                <ThemedText
+                  lightColor={colors.text}
+                  darkColor="#000"
+                  className="text-base font-medium">
                   {countryCodeValue || 'NGN'}
                 </ThemedText>
               </View>
@@ -245,7 +225,7 @@ export default function InputField({
               onFocus={handleOnFocus}
               onBlur={handleOnBlur}
               accessibilityLabel={label}
-              style={[styles.input, styles.phoneInput, {color: '#000'}]}
+              style={[styles.input, styles.phoneInput, { color: '#000' }]}
               cursorColor={colors.primary}
               autoCapitalize={autoCapitalize}
               onChangeText={onChangeText}
@@ -263,10 +243,10 @@ export default function InputField({
           </View>
         </View>
       )}
-      
+
       {/* Select Picker */}
       {selectPicker && (
-        <TouchableOpacity
+        <Pressable
           onPress={pickerPressed}
           style={[
             styles.inputContainer,
@@ -277,26 +257,21 @@ export default function InputField({
             },
             inputComponentStyle,
           ]}>
-          <ThemedText 
-            lightColor={value ? colors.text : colors.placeholder} 
+          <ThemedText
+            lightColor={value ? colors.text : colors.placeholder}
             darkColor={value ? '#000' : colors.placeholder}
-            className="text-base"
-            style={styles.pickerText}
-          >
+            className="text-[11px]"
+            style={styles.pickerText}>
             {value || placeholder}
           </ThemedText>
           {rightIcon}
-        </TouchableOpacity>
+        </Pressable>
       )}
 
       {/* Error Message */}
       {errorMessage && (
         <View style={styles.errorView}>
-          <ThemedText 
-            lightColor={colors.error} 
-            darkColor={colors.error}
-            className="text-sm"
-          >
+          <ThemedText lightColor={colors.error} darkColor={colors.error} className="text-sm">
             {errorMessage}
           </ThemedText>
         </View>
@@ -319,11 +294,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 17,
   },
   input: {
     flex: 1,
-    fontSize: 16,
+    fontSize: 11,
     paddingVertical: 0, // Remove default padding for better control
   },
   passwordInput: {
