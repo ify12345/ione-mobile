@@ -1,19 +1,17 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, useColorScheme, TouchableOpacity, Pressable } from 'react-native';
+import { View, Text, ScrollView, useColorScheme, TouchableOpacity, Pressable, ActivityIndicator } from 'react-native';
 import SafeAreaScreen from '@/components/SafeAreaScreen';
 import { ThemedText } from '@/components/ThemedText';
 import { Colors } from '@/constants/Colors';
 import { useLocalSearchParams, router } from 'expo-router';
-
-import RightArrrow from '@/assets/svg/RightArrow';
 import OpenIcon from '@/assets/svg/OpenIcon';
 import PitchIcon from '@/assets/svg/PitchSvg';
 import PlayerInfoCard from './playerinfocard';
 import BackIcon from '@/assets/svg/BackIcon';
-import { useAppDispatch } from '@/redux/store';
+import { useAppDispatch, useAppSelector } from '@/redux/store';
 import Toast from 'react-native-toast-message';
 import { joinSession } from '@/api/sessions';
-import { ActivityIndicator } from 'react-native';
+
 
 
 export default function JoinSession() {
@@ -24,7 +22,11 @@ export default function JoinSession() {
   const [loading, setLoading] = useState(false);
   const params = useLocalSearchParams();
   const sessionData = params.session ? JSON.parse(params.session as string) : null;
-  console.log('data',sessionData)
+  // console.log('data', sessionData)
+  const { user } = useAppSelector(
+    (state) => state.auth
+  );
+  // console.log(user)
   // Helper function to format date
   const formatDate = (dateString: string) => {
     if (!dateString) return 'Date TBD';
@@ -86,7 +88,9 @@ export default function JoinSession() {
       hour12: true
     });
   };
-
+  const isMember = sessionData?.members?.some(
+    (member: any) => member._id === user?._id
+  );
   // Helper function to calculate duration
   const getDuration = (timeDuration: number) => {
     if (!timeDuration) return 'TBD';
@@ -211,9 +215,23 @@ export default function JoinSession() {
                   <View className="flex w-[120px] items-center justify-center rounded-[5px] bg-gray-600 p-[10px]">
                     <Text className="text-[10px] font-[400] text-white">Match Ended</Text>
                   </View>
-                ) : (
+                ) : isMember ? (
+                  // 🔥 USER ALREADY JOINED → SHOW "Assign Sets"
                   <TouchableOpacity
-                    className="flex w-[120px] items-center justify-center rounded-[5px] bg-[#00FF94] p-[10px]"
+                    className="flex w-[120px] items-center justify-center rounded-[5px] bg-primary p-[10px]"
+                    onPress={() => router.push({
+                      pathname: '/assigned',
+                           params: {
+            session: JSON.stringify(sessionData)
+          }
+                    })}
+                  >
+                    <Text className="text-[10px] font-[400] text-white">Assign Sets</Text>
+                  </TouchableOpacity>
+                ) : (
+                  // 🔥 USER NOT A MEMBER → SHOW "Join session"
+                  <TouchableOpacity
+                    className="flex w-[120px] items-center justify-center rounded-[5px] bg-primary p-[10px]"
                     onPress={handleJoinSession}
                     disabled={loading}
                   >
@@ -224,11 +242,7 @@ export default function JoinSession() {
                     )}
                   </TouchableOpacity>
                 )}
-                <TouchableOpacity
-                  className="flex w-[100px] items-center justify-center rounded-[5px] bg-[#00FF94] p-[10px]"
-                  onPress={() => router.push('/captainjoinsession')}>
-                  <Text>Join session</Text>
-                </TouchableOpacity>
+
               </View>
 
             </View>
@@ -250,7 +264,7 @@ export default function JoinSession() {
               </ThemedText>
             </View>
             <View>
-              <PitchIcon  />
+              <PitchIcon />
             </View>
           </View>
 
@@ -274,15 +288,11 @@ export default function JoinSession() {
 
       {showDetails && (
         <>
-        
+
           <Pressable
             onPress={() => setShowDetails(false)}
             style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
+
             }}
           />
 
