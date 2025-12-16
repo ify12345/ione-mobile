@@ -74,7 +74,7 @@ export default function ProfileScreen() {
   const iconColor = colorScheme === 'dark' ? '#F5FFF2BA' : '#1C1C1C';
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useAppSelector((state) => state.auth);
-  
+  console.log(user)
   // Memoized user data formatting
   const formattedUserData = useMemo(() => {
     if (!user) return null;

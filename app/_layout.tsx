@@ -65,16 +65,16 @@ export default function RootLayout() {
           <BottomSheetModalProvider>
             <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
               <AppNavigator />
-      
+
               <StatusBar style="auto" />
-           <Toast 
-            config={toastConfig}
-            position="top"
-            topOffset={50}
-            visibilityTime={4000}
-            autoHide
-          />
-          
+              <Toast
+                config={toastConfig}
+                position="top"
+                topOffset={50}
+                visibilityTime={4000}
+                autoHide
+              />
+
             </ThemeProvider>
           </BottomSheetModalProvider>
         </GestureHandlerRootView>

@@ -19,6 +19,7 @@ import FixtureList from '@/components/FixtureList';
 import { useAppDispatch, useAppSelector } from '@/redux/store';
 import { allSessions, nearBy, nearByLocation } from '@/api/sessions';
 import ShimmerCarousel from '@/components/ShimmerCarousel';
+import { getUser } from '@/api/authThunks';
 
 
 export default function HomeScreen() {

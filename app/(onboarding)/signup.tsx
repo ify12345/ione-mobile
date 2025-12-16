@@ -13,7 +13,8 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Yup from 'yup';
-import { register } from '@/api/authThunks';
+import { register, uploadAvatar } from '@/api/authThunks';
+import * as ImagePicker from 'expo-image-picker';
 import GeolocationComponent from '@/components/GeoLocation';
 import InputField from '@/components/InputField';
 import Loader from '@/components/loader';
@@ -26,6 +27,7 @@ import { useAppDispatch } from '@/redux/store';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import Toast from "react-native-toast-message";
 import CustomDatePicker from '@/components/modals/CustomDatePicker';
+import { Image } from 'expo-image';
 
 const { width } = Dimensions.get('screen');
 
@@ -105,6 +107,72 @@ export default function SignUp() {
   const [newsletter, setNewsletter] = React.useState(false);
   const [coordinates, setCoordinates] = React.useState<[number, number]>([0, 0]);
   const router = useRouter();
+  const [avatarUri, setAvatarUri] = React.useState<string | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = React.useState(false);
+    console.log(avatarUri)
+  const handlePickAvatar = async (setFieldValue: (field: string, value: any) => void) => {
+
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (status !== 'granted') {
+      Toast.show({
+        type: 'error',
+        props: {
+          title: 'Permission Required',
+          message: 'Camera roll permissions are required to upload an avatar',
+        },
+      });
+      return;
+    }
+
+    // Pick image
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (!result.canceled && result.assets[0]) {
+      const asset = result.assets[0];
+      setUploadingAvatar(true);
+
+      try {
+        // Upload avatar
+        const response = await dispatch(uploadAvatar({
+          file: {
+            uri: asset.uri,
+            type: asset.type || 'image/jpeg',
+            name: asset.fileName || 'avatar.jpg',
+          },
+        })).unwrap();
+
+        // Set avatar URL in form
+        setFieldValue('avatar', response.avatar);
+        setAvatarUri(response.avatar);
+   
+        Toast.show({
+          type: 'success',
+          props: {
+            title: 'Success',
+            message: 'Avatar uploaded successfully',
+          },
+        });
+      } catch (error: any) {
+        Toast.show({
+          type: 'error',
+          props: {
+            title: 'Error',
+            message: error?.msg || 'Failed to upload avatar',
+          },
+        });
+      } finally {
+        setUploadingAvatar(false);
+      }
+    }
+  };
+
+
   const scrollViewRef = React.useRef<ScrollView>(null);
   const { owner } = useLocalSearchParams();
 
@@ -133,6 +201,7 @@ export default function SignUp() {
     position: '',
     height: '',
     dateOfBirth: '',
+    avatar: ''
   };
 
   const validationSchema = Yup.object().shape({
@@ -195,7 +264,7 @@ export default function SignUp() {
       .unwrap()
       .then((response) => {
         setLoading(false);
-        console.log('res',response);
+        console.log('res', response);
 
         Toast.show({
           type: 'success',
@@ -256,6 +325,27 @@ export default function SignUp() {
 
               {/* Form Fields */}
               <View className="flex flex-col gap-[20px]">
+                <View className="mb-6 items-center">
+                  <TouchableWithoutFeedback onPress={() => handlePickAvatar(setFieldValue)}>
+                    <View className="items-center">
+                      <View className="h-24 w-24 rounded-full  items-center justify-center border-2 border-gray-300 overflow-hidden">
+                        {avatarUri ? (
+                          <Image source={{ uri: avatarUri }} style={{height:'100%',width: '100%'}} className="h-full w-full" />
+                        ) : (
+                          <ThemedText className="text-gray-400 text-xs text-center px-2">
+                            Tap to upload avatar
+                          </ThemedText>
+                        )}
+                      </View>
+                      {uploadingAvatar && (
+                        <ThemedText className="text-xs text-gray-500 mt-2">Uploading...</ThemedText>
+                      )}
+                      {!uploadingAvatar && avatarUri && (
+                        <ThemedText className="text-xs text-green-500 mt-2">Avatar uploaded ✓</ThemedText>
+                      )}
+                    </View>
+                  </TouchableWithoutFeedback>
+                </View>
                 <View className="flex w-full flex-row justify-between gap-[27px]">
                   <View className="flex-1">
                     <InputField

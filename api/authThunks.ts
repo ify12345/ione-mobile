@@ -18,6 +18,30 @@ import {
 } from '@/components/typings/apiResponse'
 import axiosInstance from './axios'
 
+
+export const uploadAvatar = createAsyncThunk<
+  { avatar: string },
+  { file: { uri: string; type: string; name: string } },
+  AsyncThunkConfig
+>('user/uploadAvatar', async ({ file }, thunkAPI) => {
+  const formData = new FormData();
+  formData.append('file', {
+    uri: file.uri,
+    type: file.type,
+    name: file.name,
+  } as any);
+
+  return apiCall(
+    axiosInstance.post('/i-one/user/avatar', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    }),
+    thunkAPI
+  );
+});
+
+
 export const register = createAsyncThunk<
   RegisterResponse,
   RegisterPayload,
@@ -33,7 +57,7 @@ export const register = createAsyncThunk<
 export const getUser = createAsyncThunk<userResponse, void, AsyncThunkConfig>(
   'user/getUser',
   async (_, thunkAPI) => {
-    return apiCall(axiosInstance.get('/i-one/user'), thunkAPI, 'auth')
+    return apiCall(axiosInstance.get('/i-one/user/profile'), thunkAPI, 'auth')
   }
 )
 
