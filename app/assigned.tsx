@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, useColorScheme, TouchableOpacity, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, useColorScheme, TouchableOpacity, Pressable, ActivityIndicator, Image } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import SafeAreaScreen from '@/components/SafeAreaScreen';
 import { ThemedText } from '@/components/ThemedText';
@@ -12,6 +12,7 @@ import PlayerInfoCard from './playerinfocard';
 import BackIcon from '@/assets/svg/BackIcon';
 import TeamBoxes from './teamboxes';
 import { useAppDispatch, useAppSelector } from '@/redux/store';
+import pitch from '@/assets/images/greenpitch.png';
 
 interface Member {
   _id: string;
@@ -23,14 +24,6 @@ interface Member {
   phoneNumber: string;
   dateOfBirth: string;
   height: number;
-  [key: string]: any;
-}
-
-interface Player {
-  _id: string;
-  firstName: string;
-  nickname?: string;
-  position: string;
   [key: string]: any;
 }
 
@@ -66,14 +59,13 @@ export default function Assigned() {
   const colorScheme = useColorScheme();
   const theme = Colors[colorScheme ?? 'light'];
   const [showDetails, setShowDetails] = useState(false);
-  const [activeTab, setActiveTab] = useState('lineups');
+  const [activeTab, setActiveTab] = useState('squad'); // Start with squad view
   const [selectedSet, setSelectedSet] = useState<string | null>(null);
 
   // Select sets from Redux
   const { sets, loadingSets, errorSets, creatingSet } = useAppSelector(
     (state) => state.sessions
   );
-  console.log('sets', sets);
 
   // ⭐️ Extract dynamic data
   const pitchName = data?.location?.name ?? 'Unknown Pitch';
@@ -81,6 +73,35 @@ export default function Assigned() {
   const sessionId = data?._id;
 
   const members = data?.members || [];
+
+  // Fixed positions for 7 players (simple formation)
+  const pitchPositions = [
+    // GK - Back center
+    { left: 50, top: 80 },
+    // DF - Back left
+    { left: 25, top: 67 },
+    // DF - Back right
+    { left: 75, top: 67 },
+    // MF - Middle left
+    { left: 20, top: 40 },
+    // MF - Center
+    { left: 50, top: 40 },
+    // MF - Middle right
+    { left: 80, top: 40 },
+    // ST - Front center
+    { left: 50, top: 10 },
+  ];
+
+  // Dummy player data for empty sets
+  const dummyPlayers = [
+    { _id: 'dummy-1', firstName: 'Player 1', position: 'GK', isDummy: true },
+    { _id: 'dummy-2', firstName: 'Player 2', position: 'DF', isDummy: true },
+    { _id: 'dummy-3', firstName: 'Player 3', position: 'DF', isDummy: true },
+    { _id: 'dummy-4', firstName: 'Player 4', position: 'MF', isDummy: true },
+    { _id: 'dummy-5', firstName: 'Player 5', position: 'MF', isDummy: true },
+    { _id: 'dummy-6', firstName: 'Player 6', position: 'MF', isDummy: true },
+    { _id: 'dummy-7', firstName: 'Player 7', position: 'ST', isDummy: true },
+  ];
 
   // Fetch sets when component mounts
   useEffect(() => {
@@ -146,7 +167,55 @@ export default function Assigned() {
     );
   };
 
+  // Get players for pitch display
+  const getPlayersForPitch = () => {
+    if (selectedSet) {
+      const currentSet = sets.find((s: Set) => s._id === selectedSet);
+      if (!currentSet) return [];
+
+      // Get real players from selected set
+      const realPlayers = members.filter((member: Member) =>
+        currentSet.players.includes(member._id)
+      );
+
+      // If we have real players, show them
+      if (realPlayers.length > 0) {
+        // Always show exactly 7 players (real + dummy if needed)
+        const displayPlayers = [...realPlayers];
+        const neededDummies = 7 - displayPlayers.length;
+        
+        for (let i = 0; i < neededDummies; i++) {
+          displayPlayers.push({ 
+            ...dummyPlayers[i], 
+            _id: `dummy-${Date.now()}-${i}`,
+            isDummy: true 
+          });
+        }
+        
+        return displayPlayers.slice(0, 7);
+      }
+      
+      // If no real players in set, show dummy players
+      return dummyPlayers;
+    }
+    
+    // If no set selected, show all members with dummy players if needed
+    const displayPlayers = [...members];
+    const neededDummies = Math.max(0, 7 - displayPlayers.length);
+    
+    for (let i = 0; i < neededDummies; i++) {
+      displayPlayers.push({ 
+        ...dummyPlayers[i], 
+        _id: `dummy-${Date.now()}-${i}`,
+        isDummy: true 
+      });
+    }
+    
+    return displayPlayers.slice(0, 7);
+  };
+
   const filteredMembers = getFilteredPlayers();
+  const pitchPlayers = getPlayersForPitch();
 
   // Group filtered players by position
   const goalkeepers = filteredMembers.filter((p: Member) => p.position === 'GK');
@@ -218,15 +287,6 @@ export default function Assigned() {
 
           <View className="flex flex-row items-center justify-between border-b-[1px] border-t-[1px] border-[#5c5a5a8a] px-[31px] py-[21px]">
             <View className="flex flex-row gap-[17px]">
-              <Pressable onPress={() => setActiveTab('lineups')}>
-                <ThemedText
-                  lightColor={activeTab === 'lineups' ? '#000' : '#00000080'}
-                  className={`py-2 text-[15px] ${activeTab === 'lineups' ? 'border-b-[3px] border-[#00FF94]' : ''
-                    } font-[500]`}>
-                  Lineups
-                </ThemedText>
-              </Pressable>
-
               <Pressable onPress={() => setActiveTab('squad')}>
                 <ThemedText
                   lightColor={activeTab === 'squad' ? '#000' : '#00000080'}
@@ -235,9 +295,20 @@ export default function Assigned() {
                   Squad List
                 </ThemedText>
               </Pressable>
+
+              <Pressable onPress={() => setActiveTab('lineups')}>
+                <ThemedText
+                  lightColor={activeTab === 'lineups' ? '#000' : '#00000080'}
+                  className={`py-2 text-[15px] ${activeTab === 'lineups' ? 'border-b-[3px] border-[#00FF94]' : ''
+                    } font-[500]`}>
+                  Lineups
+                </ThemedText>
+              </Pressable>
             </View>
 
-            <PitchIcon />
+            <TouchableOpacity onPress={() => setActiveTab('lineups')}>
+              <PitchIcon />
+            </TouchableOpacity>
           </View>
 
           {/* Display Sets Loading */}
@@ -249,9 +320,10 @@ export default function Assigned() {
           )}
 
           <View>
+            {/* ✅ PITCH VIEW - Only shows when PitchIcon is clicked (activeTab === 'lineups') */}
             {activeTab === 'lineups' && (
-              <>
-                {/* Team Filter Boxes */}
+              <View className="mx-[31px] mt-6">
+                {/* Team Filter Boxes - Show for pitch view too */}
                 {sets.length > 0 && (
                   <View className="mb-[20px]">
                     <TeamBoxes
@@ -276,80 +348,94 @@ export default function Assigned() {
                 {sets.length === 0 && !loadingSets && (
                   <View className="px-[32px] py-8 items-center">
                     <Text className="text-[16px] text-[#2A2A2A] text-center">
-                      No sets created yet. Create sets to organize teams.
+                      Create sets first to view lineups on pitch.
                     </Text>
                   </View>
                 )}
 
-                {/* Show message if set is selected but has no players */}
-                {selectedSet && filteredMembers.length === 0 && (
-                  <View className="px-[32px] py-8 items-center">
-                    <Text className="text-[16px] text-[#2A2A2A] text-center">
-                      No players assigned to {currentSetName} yet.
-                    </Text>
-                  </View>
-                )}
+                {/* PITCH VIEW */}
+                <View className="relative h-[400px] w-full rounded-[12px] overflow-hidden bg-green-800">
+                  <Image
+                    source={pitch}
+                    resizeMode="cover"
+                    className="absolute h-full w-full"
+                  />
 
-                {/* ⭐ GOALKEEPERS */}
-                {goalkeepers.length > 0 && (
-                  <View className="mt-[30px] flex flex-col gap-[10px]">
-                    <Text className="mb-2 px-[32px] text-[16px] font-[700]">
-                      Goalkeeper ({goalkeepers.length})
-                    </Text>
-                    {goalkeepers.map((p: Member) => (
-                      <PlayerInfoCard key={p._id} name={p.nickname || p.firstName} />
-                    ))}
-                  </View>
-                )}
+                  {/* Show players on pitch */}
+                  {pitchPlayers.map((player: any, index: number) => {
+                    const position = pitchPositions[index];
+                    const isDummy = player.isDummy;
+                    
+                    // Get display name
+                    const displayName = player.nickname || 
+                      player.firstName || 
+                      `Player ${index + 1}`;
+                    
+                    // Get initials for avatar
+                    const initials = player.nickname?.[0]?.toUpperCase() || 
+                      player.firstName?.[0]?.toUpperCase() || 
+                      'P';
 
-                {/* ⭐ DEFENDERS */}
-                {defenders.length > 0 && (
-                  <View className="mt-[30px] flex flex-col gap-[10px]">
-                    <Text className="mb-2 px-[32px] text-[16px] font-[700]">
-                      Defenders ({defenders.length})
-                    </Text>
-                    {defenders.map((p: Member) => (
-                      <PlayerInfoCard key={p._id} name={p.nickname || p.firstName} />
-                    ))}
-                  </View>
-                )}
+                    return (
+                      <View
+                        key={player._id || `dummy-${index}`}
+                        style={{
+                          position: 'absolute',
+                          top: `${position.top}%`,
+                          left: `${position.left}%`,
+                          transform: [{ translateX: -20 }, { translateY: -20 }],
+                        }}
+                        className="items-center"
+                      >
+                        {/* Player Avatar */}
+                        <View className="relative">
+                          <View className={`h-[40px] w-[40px] rounded-full ${isDummy ? 'bg-gray-300' : 'bg-white'} border-2 ${isDummy ? 'border-gray-500' : 'border-green-600'} items-center justify-center shadow-lg`}>
+                            <Text className="text-[16px] font-bold text-gray-800">
+                              {initials}
+                            </Text>
+                          </View>
+                        </View>
+                        
+                        {/* Player Name */}
+                        <View className="mt-2 items-center">
+                          <Text className="text-[12px] font-bold text-white bg-black/70 px-2 py-1 rounded-full min-w-[60px] text-center">
+                            {displayName.length > 8 ? `${displayName.substring(0, 8)}...` : displayName}
+                          </Text>
+                          {!isDummy && player.position && (
+                            <Text className="text-[10px] text-gray-200 mt-1">
+                              {player.position}
+                            </Text>
+                          )}
+                        </View>
+                      </View>
+                    );
+                  })}
 
-                {/* ⭐ MIDFIELDERS */}
-                {midfielders.length > 0 && (
-                  <View className="mt-[30px] flex flex-col gap-[10px]">
-                    <Text className="mb-2 px-[32px] text-[16px] font-[700]">
-                      Midfielders ({midfielders.length})
-                    </Text>
-                    {midfielders.map((p: Member) => (
-                      <PlayerInfoCard key={p._id} name={p.nickname || p.firstName} />
-                    ))}
-                  </View>
-                )}
-
-                {/* ⭐ STRIKERS */}
-                {strikers.length > 0 && (
-                  <View className="mt-[30px] flex flex-col gap-[10px]">
-                    <Text className="mb-2 px-[32px] text-[16px] font-[700]">
-                      Strikers ({strikers.length})
-                    </Text>
-                    {strikers.map((p: Member) => (
-                      <PlayerInfoCard key={p._id} name={p.nickname || p.firstName} />
-                    ))}
-                  </View>
-                )}
-
-                {/* Show all players if no set is selected */}
-                {!selectedSet && sets.length > 0 && filteredMembers.length > 0 && (
-                  <View className="px-[32px] mt-4">
-                    <Text className="text-[14px] text-[#2A2A2A] text-center">
-                      Select a team above to view players by set
-                    </Text>
-                  </View>
-                )}
-              </>
+                  {/* Show message if no real players */}
+                  {selectedSet && filteredMembers.length === 0 && !loadingSets && (
+                    <View className="flex-1 items-center justify-center bg-black/30">
+                      <Text className="text-white text-sm font-semibold">No players in this team</Text>
+                      <Text className="text-gray-300 text-xs mt-1">Dummy players shown for layout</Text>
+                    </View>
+                  )}
+                </View>
+                
+                {/* Formation Info */}
+                <View className="mt-4 items-center">
+                  <Text className="text-gray-700 text-sm font-bold">
+                    Formation: 2-3-1
+                  </Text>
+                  <Text className="text-gray-500 text-xs mt-1">
+                    {selectedSet ? 
+                      `${filteredMembers.length} real players • ${7 - filteredMembers.length} dummy players` :
+                      `${members.length} real players • ${7 - members.length} dummy players`
+                    }
+                  </Text>
+                </View>
+              </View>
             )}
 
-            {/* ⭐ SQUAD LIST */}
+            {/* ✅ SQUAD LIST - Default view */}
             {activeTab === 'squad' && (
               <View className="flex flex-col gap-[20px] w-full">
                 {/* Team Filter for Squad List */}
@@ -400,7 +486,7 @@ export default function Assigned() {
                   <View className="px-[32px] py-8 items-center">
                     <Text className="text-[16px] text-[#2A2A2A] text-center">
                       {selectedSet
-                        ? `No players in ${currentSetName}`
+                        ? `No players in ${currentSetName} - Dummy data shown on pitch`
                         : 'No players available'
                       }
                     </Text>

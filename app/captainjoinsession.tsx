@@ -107,23 +107,33 @@ export default function CaptainJoinSession() {
                 {/* GOALKEEPER */}
                 <View className="flex flex-col gap-[20px]">
                   <PlayerInfoCard name="David" />
-                  <TeamBoxes />
+                  <TeamBoxes sets={[]} selectedSet={null} onSelectSet={function (setId: string | null): void {
+                                      throw new Error('Function not implemented.');
+                                  } } />
                 </View>
 
                 {/* MIDFIELDERS */}
                 <View className="flex flex-col gap-[20px]">
                   <PlayerInfoCard name="Ayo" />
-                  <TeamBoxes />
+                  <TeamBoxes sets={[]} selectedSet={null} onSelectSet={function (setId: string | null): void {
+                                      throw new Error('Function not implemented.');
+                                  } } />
                   <PlayerInfoCard name="Bola" />
-                  <TeamBoxes />
+                  <TeamBoxes sets={[]} selectedSet={null} onSelectSet={function (setId: string | null): void {
+                                      throw new Error('Function not implemented.');
+                                  } } />
                 </View>
 
                 {/* DEFENDERS */}
                 <View className="flex flex-col gap-[20px]">
                   <PlayerInfoCard name="Chinedu" />
-                  <TeamBoxes />
+                  <TeamBoxes sets={[]} selectedSet={null} onSelectSet={function (setId: string | null): void {
+                                      throw new Error('Function not implemented.');
+                                  } } />
                   <PlayerInfoCard name="Umar" />
-                  <TeamBoxes />
+                  <TeamBoxes sets={[]} selectedSet={null} onSelectSet={function (setId: string | null): void {
+                                      throw new Error('Function not implemented.');
+                                  } } />
                 </View>
               </View>
             )}
@@ -131,7 +141,9 @@ export default function CaptainJoinSession() {
             {/* ⭐ SQUAD LIST VIEW */}
             {activeTab === 'lineups' && (
                 <>   <View className=' pr-[150px] items-start flex'>
-                                  <TeamBoxes />{' '}
+                                  <TeamBoxes sets={[]} selectedSet={null} onSelectSet={function (setId: string | null): void {
+                                  throw new Error('Function not implemented.');
+                              } } />{' '}
                                 </View>
               <View className=" flex mt-[30px] flex-col gap-[20px]">
                 {/* GOALKEEPER */}

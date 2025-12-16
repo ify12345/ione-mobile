@@ -11,6 +11,7 @@ import BackIcon from '@/assets/svg/BackIcon';
 import { useAppDispatch, useAppSelector } from '@/redux/store';
 import Toast from 'react-native-toast-message';
 import { joinSession } from '@/api/sessions';
+import pitch from '@/assets/images/greenpitch.png';
 
 
 
