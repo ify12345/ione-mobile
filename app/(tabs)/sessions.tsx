@@ -102,7 +102,7 @@ export default function Schedule() {
   const dispatch = useAppDispatch();
   const { user } = useAppSelector((state) => state.auth);
   const { all, loadingAll, errorAll } = useAppSelector((state) => state.sessions);
-console.log(all)
+// console.log(all)
   // Fetch all sessions on mount
   useEffect(() => {
     if (!user?.locationInfo?.location?.coordinates) return;

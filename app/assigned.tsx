@@ -66,7 +66,7 @@ export default function Assigned() {
   const { sets, loadingSets, errorSets, creatingSet } = useAppSelector(
     (state) => state.sessions
   );
-
+  // console.log('players',sets[0].players)
   // ⭐️ Extract dynamic data
   const pitchName = data?.location?.name ?? 'Unknown Pitch';
   const pitchAddress = data?.location?.address ?? 'Unknown Address';
@@ -162,8 +162,8 @@ export default function Assigned() {
     const playerIdsInSet = currentSet.players;
 
     // Filter members who are in the selected set's players array
-    return members.filter((member: Member) =>
-      playerIdsInSet.includes(member._id)
+    return members.filter(member =>
+      currentSet.players.some((p: any) => p._id === member._id)
     );
   };
 
@@ -174,43 +174,44 @@ export default function Assigned() {
       if (!currentSet) return [];
 
       // Get real players from selected set
-      const realPlayers = members.filter((member: Member) =>
-        currentSet.players.includes(member._id)
-      );
+    const realPlayers = members.filter(member =>
+  currentSet.players.some((p: any) => p._id === member._id)
+);
+
 
       // If we have real players, show them
       if (realPlayers.length > 0) {
         // Always show exactly 7 players (real + dummy if needed)
         const displayPlayers = [...realPlayers];
         const neededDummies = 7 - displayPlayers.length;
-        
+
         for (let i = 0; i < neededDummies; i++) {
-          displayPlayers.push({ 
-            ...dummyPlayers[i], 
+          displayPlayers.push({
+            ...dummyPlayers[i],
             _id: `dummy-${Date.now()}-${i}`,
-            isDummy: true 
+            isDummy: true
           });
         }
-        
+
         return displayPlayers.slice(0, 7);
       }
-      
+
       // If no real players in set, show dummy players
       return dummyPlayers;
     }
-    
+
     // If no set selected, show all members with dummy players if needed
     const displayPlayers = [...members];
     const neededDummies = Math.max(0, 7 - displayPlayers.length);
-    
+
     for (let i = 0; i < neededDummies; i++) {
-      displayPlayers.push({ 
-        ...dummyPlayers[i], 
+      displayPlayers.push({
+        ...dummyPlayers[i],
         _id: `dummy-${Date.now()}-${i}`,
-        isDummy: true 
+        isDummy: true
       });
     }
-    
+
     return displayPlayers.slice(0, 7);
   };
 
@@ -365,15 +366,15 @@ export default function Assigned() {
                   {pitchPlayers.map((player: any, index: number) => {
                     const position = pitchPositions[index];
                     const isDummy = player.isDummy;
-                    
+                  
                     // Get display name
-                    const displayName = player.nickname || 
-                      player.firstName || 
+                    const displayName = player.nickname ||
+                      player.firstName ||
                       `Player ${index + 1}`;
-                    
+
                     // Get initials for avatar
-                    const initials = player.nickname?.[0]?.toUpperCase() || 
-                      player.firstName?.[0]?.toUpperCase() || 
+                    const initials = player.nickname?.[0]?.toUpperCase() ||
+                      player.firstName?.[0]?.toUpperCase() ||
                       'P';
 
                     return (
@@ -395,7 +396,7 @@ export default function Assigned() {
                             </Text>
                           </View>
                         </View>
-                        
+
                         {/* Player Name */}
                         <View className="mt-2 items-center">
                           <Text className="text-[12px] font-bold text-white bg-black/70 px-2 py-1 rounded-full min-w-[60px] text-center">
@@ -419,14 +420,14 @@ export default function Assigned() {
                     </View>
                   )}
                 </View>
-                
+
                 {/* Formation Info */}
                 <View className="mt-4 items-center">
                   <Text className="text-gray-700 text-sm font-bold">
                     Formation: 2-3-1
                   </Text>
                   <Text className="text-gray-500 text-xs mt-1">
-                    {selectedSet ? 
+                    {selectedSet ?
                       `${filteredMembers.length} real players • ${7 - filteredMembers.length} dummy players` :
                       `${members.length} real players • ${7 - members.length} dummy players`
                     }
@@ -463,9 +464,9 @@ export default function Assigned() {
                   filteredMembers.map((player: Member) => {
                     // Find which set this player belongs to
                     const playerSet = sets.find((s: Set) =>
-                      s.players.some((playerId: string) => playerId === player._id)
+                      s.players.some((p: any) => p._id === player._id)
                     );
-
+                    console.log('members', playerSet)
                     return (
                       <View key={player._id} className="flex flex-col gap-[10px] px-[32px]">
                         <PlayerInfoCard name={player.nickname || player.firstName} />
