@@ -5,6 +5,7 @@ import * as React from 'react';
 import {
   Dimensions,
   KeyboardAvoidingView,
+  Modal,
   Platform,
   ScrollView,
   TouchableWithoutFeedback,
@@ -27,7 +28,6 @@ import { useAppDispatch } from '@/redux/store';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import Toast from "react-native-toast-message";
 import CustomDatePicker from '@/components/modals/CustomDatePicker';
-import { Image } from 'expo-image';
 
 const { width } = Dimensions.get('screen');
 
@@ -183,6 +183,7 @@ export default function SignUp() {
   };
 
   const [isDatePickerVisible, setDatePickerVisible] = React.useState(false);
+  const [isPositionPickerVisible, setPositionPickerVisible] = React.useState(false);
 
   const handleConfirmDate = (date: Date, setFieldValue: (field: string, value: any) => void) => {
     setDatePickerVisible(false);
@@ -299,7 +300,7 @@ export default function SignUp() {
           initialValues={initialValues}
           validationSchema={validationSchema}
           onSubmit={handleSubmit}>
-          {({ handleChange, handleSubmit, values, errors, touched, handleBlur, setFieldValue }) => (
+          {({ handleChange, handleSubmit, values, errors, touched, handleBlur, setFieldValue, setFieldTouched }) => (
             <ScrollView
               ref={scrollViewRef}
               showsVerticalScrollIndicator={false}
@@ -387,16 +388,22 @@ export default function SignUp() {
                     />
                   </View>
                   <View className="flex-1">
-                    <InputField
-                      required
-                      label="Position"
-                      placeholder="Enter Position"
-                      value={values.position}
-                      onChangeText={handleChange('position')}
-                      onBlur={handleBlur('position')}
-                      onFocus={() => handleInputFocus(0)}
-                      errorMessage={touched.position && errors.position ? errors.position : ''}
-                    />
+                    <ThemedText className="text-base font-medium text-gray-700 mb-2">
+                      Position <ThemedText className="text-red-500">*</ThemedText>
+                    </ThemedText>
+                    <TouchableWithoutFeedback onPress={() => { setPositionPickerVisible(true); setFieldTouched('position', true); }}>
+                      <View
+                        className={`border rounded-md px-4 py-[16px] ${touched.position && errors.position ? 'border-red-500' : 'border-gray-300'
+                          }`}
+                      >
+                        <ThemedText className={`${values.position ? 'text-black' : 'text-gray-400'}`}>
+                          {values.position || 'Select Position'}
+                        </ThemedText>
+                      </View>
+                    </TouchableWithoutFeedback>
+                    {touched.position && errors.position && (
+                      <ThemedText className="text-xs text-red-500 mt-1">{errors.position}</ThemedText>
+                    )}
                   </View>
                 </View>
 
@@ -460,6 +467,39 @@ export default function SignUp() {
                     onClose={() => setDatePickerVisible(false)}
                     maximumDate={new Date()} // Prevent future dates
                   />
+
+                  <Modal
+                    visible={isPositionPickerVisible}
+                    transparent={true}
+                    animationType="slide"
+                    onRequestClose={() => setPositionPickerVisible(false)}
+                  >
+                    <View className="flex-1 justify-end bg-transparent">
+                      <View className="bg-white rounded-t-lg p-4">
+                        <ThemedText className="text-lg font-bold mb-4">Select Position</ThemedText>
+                        <TouchableWithoutFeedback onPress={() => { setFieldValue('position', 'MF'); setPositionPickerVisible(false); }}>
+                          <View className="py-3 border-b border-gray-200">
+                            <ThemedText>MF</ThemedText>
+                          </View>
+                        </TouchableWithoutFeedback>
+                        <TouchableWithoutFeedback onPress={() => { setFieldValue('position', 'ST'); setPositionPickerVisible(false); }}>
+                          <View className="py-3 border-b border-gray-200">
+                            <ThemedText>ST</ThemedText>
+                          </View>
+                        </TouchableWithoutFeedback>
+                        <TouchableWithoutFeedback onPress={() => { setFieldValue('position', 'DF'); setPositionPickerVisible(false); }}>
+                          <View className="py-3">
+                            <ThemedText>DF</ThemedText>
+                          </View>
+                        </TouchableWithoutFeedback>
+                        <TouchableWithoutFeedback onPress={() => setPositionPickerVisible(false)}>
+                          <View className="py-3 mt-4 bg-gray-200 rounded">
+                            <ThemedText className="text-center">Cancel</ThemedText>
+                          </View>
+                        </TouchableWithoutFeedback>
+                      </View>
+                    </View>
+                  </Modal>
                 </View>
 
 
