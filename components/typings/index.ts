@@ -128,6 +128,7 @@ export interface User {
   placeOfBirth?: string
   address?:string;
   isCaptain?: boolean
+  avatar?: string;
 }
 
 export interface Order {
@@ -227,4 +228,11 @@ export type Fixture = {
     teamB: string;
     teamBName: string;
     type: string;
+};
+
+export interface  TermsCheckboxProps {
+  checked: boolean;
+  onToggle: () => void;
+  label: string;
+  required?: boolean;
 };

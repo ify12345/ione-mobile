@@ -83,10 +83,10 @@ console.log(sessionId)
 
           Toast.show({
             type: 'success',
-            props: {
-              title: 'Success',
-              message: 'Session created successfully',
-            },
+           
+              text1: 'Success',
+              text2: 'Session created successfully',
+           
           });
 
           setTimeout(() => {

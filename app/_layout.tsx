@@ -5,7 +5,6 @@ import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 import '@/globals.css';
-import FlashMessage from "react-native-flash-message";
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
@@ -14,6 +13,7 @@ import store, { persistor, useAppSelector } from '@/redux/store';
 import Toast from 'react-native-toast-message';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
+import ToastManager from 'toastify-react-native'
 import { setupAxiosInterceptors } from '@/utils/SetUpAxiosInterceptors';
 import toastConfig from '@/utils/toast';
 
@@ -76,9 +76,10 @@ export default function RootLayout() {
               />
 
             </ThemeProvider>
+             <ToastManager />
           </BottomSheetModalProvider>
         </GestureHandlerRootView>
-
+       
       </PersistGate>
     </Provider>
   );

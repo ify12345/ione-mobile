@@ -31,7 +31,7 @@ export default function HomeScreen() {
     (state) => state.sessions
   );
   const dispatch = useAppDispatch();
-  
+  console.log('pitches from home screen', pitches);
   useEffect(() => {
     if (!user?.locationInfo?.location?.coordinates) return;
 

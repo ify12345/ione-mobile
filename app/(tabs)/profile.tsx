@@ -22,7 +22,7 @@ import {
 } from 'react-native';
 import { Image } from 'expo-image';
 import * as SecureStore from 'expo-secure-store';
-import Toast from 'react-native-toast-message';
+import { Toast } from 'toastify-react-native';
 import { logout } from '@/redux/reducers/auth';
 import { persistor, useAppDispatch, useAppSelector } from '@/redux/store';
 
@@ -126,19 +126,19 @@ export default function ProfileScreen() {
 
               Toast.show({
                 type: 'success',
-                props: {
-                  title: 'Success',
-                  message: 'You have been logged out successfully.',
-                },
+          
+                  text1: 'Success',
+                  text2: 'You have been logged out successfully.',
+               
               });
             } catch (error) {
               console.log('Logout error:', error);
               Toast.show({
                 type: 'error',
-                props: {
-                  title: 'Error',
-                  message: 'Please try again.',
-                },
+               
+                  text1: 'Error',
+                  text2: 'Please try again.',
+        
               });
             } finally {
               setIsLoading(false);
@@ -185,9 +185,9 @@ export default function ProfileScreen() {
         </View>
 
         <Image
-          source={require('@/assets/images/profile.png')}
-          resizeMode='cover'
-          style={{ width: width - 70, height: height * 0.4, alignSelf: 'center' }}
+          source={user.avatar}
+          resizeMode='contain'
+          style={{ width: 100, height: 100, borderRadius: 100,objectFit: 'contain' }}
         />
 
         {/* Use nickname or full name as the display name */}

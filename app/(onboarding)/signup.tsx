@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-undef */
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Formik } from 'formik';
@@ -26,76 +27,15 @@ import { Icon } from '@/components/ui/Icon';
 import { Colors } from '@/constants/Colors';
 import { useAppDispatch } from '@/redux/store';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import Toast from "react-native-toast-message";
+import { Toast } from "toastify-react-native";
 import CustomDatePicker from '@/components/modals/CustomDatePicker';
+import { Image } from 'expo-image';
+import { Ionicons } from '@expo/vector-icons';
+import CustomCheckbox from '@/components/CustomCheckbox';
+import TermsCheckbox from '@/components/ui/TermsCheckbox';
 
 const { width } = Dimensions.get('screen');
 
-// Custom Checkbox Component
-type CheckboxProps = {
-  checked: boolean;
-  onToggle: () => void;
-  label: string;
-  required?: boolean;
-};
-
-const Checkbox: React.FC<CheckboxProps> = ({ checked, onToggle, label, required = false }) => {
-  return (
-    <TouchableWithoutFeedback onPress={onToggle}>
-      <View className="flex flex-row items-start gap-3">
-        <View
-          className={`h-5 w-5 rounded border-2 items-center justify-center ${checked ? 'bg-[#00FF94] border-[#00FF94]' : 'bg-white border-gray-400'
-            }`}>
-          {checked && <View className="w-2 h-2 bg-white rounded-sm" />}
-        </View>
-        <View className="flex-1">
-          <ThemedText className="text-sm">
-            {required && <ThemedText className="text-red-500">* </ThemedText>}
-            {label}
-          </ThemedText>
-        </View>
-      </View>
-    </TouchableWithoutFeedback>
-  );
-};
-
-// Terms and Conditions Checkbox Component
-const TermsCheckbox: React.FC<{ checked: boolean; onToggle: () => void }> = ({
-  checked,
-  onToggle,
-}) => {
-  return (
-    <TouchableWithoutFeedback onPress={onToggle}>
-      <View className="flex flex-row items-start gap-3">
-        <View
-          className={`h-5 w-5 rounded border-2 items-center justify-center ${checked ? 'bg-[#00FF94] border-[#00FF94]' : 'bg-white border-gray-400'
-            }`}>
-          {checked && <View className="w-2 h-2 bg-white rounded-sm" />}
-        </View>
-        <View className="flex-1">
-          <ThemedText className="text-sm text-gray-700">
-            I agree to the{' '}
-            <ThemedText
-              className="text-[#00FF94] underline"
-              onPress={() => {
-                /* Navigate to terms */
-              }}>
-              Terms and Conditions
-            </ThemedText>{' '}
-            and{' '}
-            <ThemedText
-              className="text-[#00FF94] underline"
-              onPress={() => {
-                /* Navigate to privacy */
-              }}>
-              Privacy Policy
-            </ThemedText>
-          </ThemedText>
-        </View>
-      </View>
-    </TouchableWithoutFeedback>
-  );
-};
 
 export default function SignUp() {
   const colorScheme = useColorScheme();
@@ -109,18 +49,15 @@ export default function SignUp() {
   const router = useRouter();
   const [avatarUri, setAvatarUri] = React.useState<string | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = React.useState(false);
-    console.log(avatarUri)
+  console.log(avatarUri)
   const handlePickAvatar = async (setFieldValue: (field: string, value: any) => void) => {
-
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if (status !== 'granted') {
       Toast.show({
         type: 'error',
-        props: {
-          title: 'Permission Required',
-          message: 'Camera roll permissions are required to upload an avatar',
-        },
+        text1: 'Permission Required',
+        text2: 'Camera roll permissions are required to upload an avatar',
       });
       return;
     }
@@ -150,28 +87,23 @@ export default function SignUp() {
         // Set avatar URL in form
         setFieldValue('avatar', response.avatar);
         setAvatarUri(response.avatar);
-   
+
         Toast.show({
           type: 'success',
-          props: {
-            title: 'Success',
-            message: 'Avatar uploaded successfully',
-          },
+          text1: 'Success',
+          text2: 'Avatar uploaded successfully',
         });
       } catch (error: any) {
         Toast.show({
           type: 'error',
-          props: {
-            title: 'Error',
-            message: error?.msg || 'Failed to upload avatar',
-          },
+          text1: 'Error',
+          text2: error?.msg || 'Failed to upload avatar',
         });
       } finally {
         setUploadingAvatar(false);
       }
     }
   };
-
 
   const scrollViewRef = React.useRef<ScrollView>(null);
   const { owner } = useLocalSearchParams();
@@ -227,10 +159,8 @@ export default function SignUp() {
     if (!acceptedTerms) {
       Toast.show({
         type: 'error',
-        props: {
-          title: 'Error',
-          message: 'Please accept the Terms and Conditions to proceed.',
-        },
+        text1: 'Error',
+        text2: 'Please accept the Terms and Conditions to proceed.',
       });
       return;
     }
@@ -239,10 +169,8 @@ export default function SignUp() {
     if (coordinates[0] === 0 && coordinates[1] === 0) {
       Toast.show({
         type: 'error',
-        props: {
-          title: 'Error',
-          message: 'Please get your location coordinates first',
-        },
+        text1: 'Error',
+        text2: 'Please get your location coordinates first',
       });
       return;
     }
@@ -255,8 +183,6 @@ export default function SignUp() {
         coordinates,
       },
       height: Number(values.height),
-
-
     };
     console.log(payload);
 
@@ -269,23 +195,19 @@ export default function SignUp() {
 
         Toast.show({
           type: 'success',
-          props: {
-            title: 'Success',
-            message: response.message || 'Account created successfully',
-          },
+          text1: 'Success',
+          text2: response.message || 'Account created successfully',
         });
         router.push("/(onboarding)/signin");
       })
       .catch((err) => {
         setLoading(false);
         console.log('error is', err);
-        const message = err?.msg?.message || err?.msg;
+        const message = err?.msg?.message || err?.msg || 'Registration failed';
         Toast.show({
           type: 'error',
-          props: {
-            title: 'Error',
-            message: message,
-          },
+          text1: 'Error',
+          text2: message,
         });
       });
   };
@@ -331,7 +253,7 @@ export default function SignUp() {
                     <View className="items-center">
                       <View className="h-24 w-24 rounded-full  items-center justify-center border-2 border-gray-300 overflow-hidden">
                         {avatarUri ? (
-                          <Image source={{ uri: avatarUri }} style={{height:'100%',width: '100%'}} className="h-full w-full" />
+                          <Image source={{ uri: avatarUri }} style={{ height: '100%', width: '100%' }} className="h-full w-full" />
                         ) : (
                           <ThemedText className="text-gray-400 text-xs text-center px-2">
                             Tap to upload avatar
@@ -557,8 +479,8 @@ export default function SignUp() {
                   </View>
 
                   {/* Newsletter Subscription - Optional */}
-                  <View className="rtl:ounded-lg">
-                    <Checkbox
+                  <View className="rounded-lg">
+                    <CustomCheckbox
                       checked={newsletter}
                       onToggle={() => setNewsletter(!newsletter)}
                       label="Recieve Emails from our Newsletter"

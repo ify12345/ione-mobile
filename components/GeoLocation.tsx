@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, TouchableOpacity, ActivityIndicator } from 'react-native';
 import * as Location from 'expo-location';
-import Toast from 'react-native-toast-message';
+import { Toast } from 'toastify-react-native';
 import { ThemedText } from './ThemedText';
 
 interface GeolocationComponentProps {
@@ -21,10 +21,9 @@ const GeolocationComponent: React.FC<GeolocationComponentProps> = ({ setCoordina
       if (status !== 'granted') {
         Toast.show({
           type: 'error',
-          props: {
-            title: 'Permission denied',
-            message: 'Please allow location access in your device settings',
-          },
+          text1: 'Permission denied',
+          text2: 'Please allow location access in your device settings',
+
         });
         setLoading(false);
         return;
@@ -40,13 +39,10 @@ const GeolocationComponent: React.FC<GeolocationComponentProps> = ({ setCoordina
       // Note: API expects [longitude, latitude] format for GeoJSON points
       setCoordinates([longitude, latitude]);
 
-    
+
       Toast.show({
         type: 'success',
-        props: {
-          title: 'Location Found',
-          message: `[${longitude.toFixed(6)}, ${latitude.toFixed(6)}]`,
-        },
+        text1: 'Location retrieved successfully',
       });
 
       setLoading(false);

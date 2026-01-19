@@ -22,7 +22,7 @@ import { useRouter } from 'expo-router';
 import SafeAreaScreen from '@/components/SafeAreaScreen';
 import { Colors } from '@/constants/Colors';
 import { Icon } from '@/components/ui/Icon';
-import Toast from 'react-native-toast-message';
+import { Toast } from 'toastify-react-native';
 import { useAppDispatch } from '@/redux/store';
 import { login } from '@/api/authThunks';
 
@@ -75,12 +75,10 @@ export default function SignIn() {
       .then((response) => {
         setLoading(false);
         console.log(response);
-       Toast.show({
+        Toast.show({
           type: 'success',
-          props: {
-            title: 'Success',
-            message: response.message || 'Login successful',
-          },
+          text1: 'Success',
+          text2: response.message || 'Login successful',
         });
         router.replace('/(tabs)');
       })
@@ -90,10 +88,8 @@ export default function SignIn() {
         const message = err?.msg?.message || err?.msg || 'Login failed';
         Toast.show({
           type: 'error',
-          props: {
-            title: 'Error',
-            message: message,
-          },
+          text1: 'Error',
+          text2: message,
         });
       });
   };
@@ -201,7 +197,7 @@ export default function SignIn() {
 
               {/* Sign Up Link */}
               <View className="mt-6 items-center">
-                <TouchableWithoutFeedback onPress={() => router.push('/(onboarding)/signup')}>
+                <TouchableWithoutFeedback onPress={() => router.push('/(onboarding)/role')}>
                   <View className="flex-row items-center">
                     <ThemedText lightColor="#6C757D" darkColor="#9BA1A6" className="text-base">
                       Don't have an account?{' '}
