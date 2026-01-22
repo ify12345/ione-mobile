@@ -116,13 +116,14 @@ export interface User {
   token?: string;
   isAdmin?: boolean;
   locationInfo? : {
-    location?:{
-      type: string;
-      coordinates: [number, number];
-    },
+   
     address?:string
 
   },
+   location?:{
+      type: string;
+      coordinates: [number, number];
+    },
   dateOfBirth?: string
   height?: number;
   placeOfBirth?: string

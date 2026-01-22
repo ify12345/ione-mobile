@@ -9,22 +9,24 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import React, { useEffect } from 'react';
-import store, { persistor, useAppSelector } from '@/redux/store';
+import store, { persistor, useAppDispatch, useAppSelector } from '@/redux/store';
 import Toast from 'react-native-toast-message';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import ToastManager from 'toastify-react-native'
 import { setupAxiosInterceptors } from '@/utils/SetUpAxiosInterceptors';
 import toastConfig from '@/utils/toast';
+import { getUser } from '@/api/authThunks';
 
 setupAxiosInterceptors();
 
 function AppNavigator() {
   const router = useRouter();
+    const dispatch = useAppDispatch(); 
   const { isAuthenticated, user, isRegistered, isVerified } = useAppSelector(
     (state) => state.auth
   );
-  // console.log('user',user.locationInfo.location.coordinates)
+  console.log('user',user.location?.coordinates)
   useEffect(() => {
     if (isAuthenticated && user) {
       router.replace('/(tabs)');
@@ -36,6 +38,18 @@ function AppNavigator() {
       router.replace('/(onboarding)');
     }
   }, [isAuthenticated, user, isRegistered, isVerified]);
+
+ useEffect(() => {
+  
+      console.log('Token exists, fetching user data...');
+      dispatch(getUser()).unwrap().then((response) => {
+        console.log('User data fetched successfully',response);
+      }).catch((err) => {
+          const message = err?.msg?.message || err?.msg
+        console.error('Failed to fetch user data:', message);
+      });
+  
+  }, [dispatch]);
 
   return (
     <Stack screenOptions={{ headerShown: false }}>

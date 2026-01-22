@@ -105,9 +105,9 @@ export default function Schedule() {
 // console.log(all)
   // Fetch all sessions on mount
   useEffect(() => {
-    if (!user?.locationInfo?.location?.coordinates) return;
+    if (!user?.location?.coordinates) return;
 
-    const [lat, lng] = user.locationInfo.location.coordinates;
+    const [lat, lng] = user.location.coordinates;
 
     const payload = {
       lat,
@@ -436,8 +436,6 @@ export default function Schedule() {
           <View className="mt-[18px] px-[32px]">
             <TouchableOpacity
               className="flex w-full flex-row items-center justify-between rounded-[5px] border border-[#7D7D7D] px-[21px] py-[15px]"
-
-              // 🚀 UPDATED BUTTON — now routes with ID
               onPress={() => {
                 const tabId = TAB_ROUTE_MAP[activeTab];
 

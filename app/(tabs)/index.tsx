@@ -31,11 +31,11 @@ export default function HomeScreen() {
     (state) => state.sessions
   );
   const dispatch = useAppDispatch();
-  console.log('pitches from home screen', pitches);
+  console.log('pitches from home screen', user?.location?.coordinates);
   useEffect(() => {
-    if (!user?.locationInfo?.location?.coordinates) return;
+    if (!user?.location?.coordinates) return;
 
-    const [lat, lng] = user.locationInfo.location.coordinates;
+    const [lat, lng] = user.location.coordinates;
 
     const payload = {
       lat,

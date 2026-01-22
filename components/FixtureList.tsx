@@ -32,7 +32,7 @@ const FixtureList: React.FC = () => {
 
     const renderItem: ListRenderItem<Fixture> = ({ item }) => (
         <TouchableOpacity
-            className="dark:bg-gray-800 rounded-[5px] py-[10px] px-[25px] flex-col justify-between gap-[7px] shadow-xl bg-[#EDFFF8]"
+            className="dark:bg-gray-800 rounded-[5px] py-[10px] px-[25px] flex-col justify-between gap-[7px]  bg-[#EDFFF8]"
             onPress={() => handleFixturePress(item)}
         >
             <View className="flex flex-row justify-between items-center">
