@@ -98,11 +98,11 @@ export default function Schedule() {
   const [activeTab, setActiveTab] = useState<'all' | 'tournaments' | 'friendlies' | 'sets'>('all');
   const navigation = useNavigation<NavigationProp>();
   const scrollViewRef = useRef<ScrollView>(null);
-  
+
   const dispatch = useAppDispatch();
   const { user } = useAppSelector((state) => state.auth);
   const { all, loadingAll, errorAll } = useAppSelector((state) => state.sessions);
-// console.log(all)
+  // console.log(all)
   // Fetch all sessions on mount
   useEffect(() => {
     if (!user?.location?.coordinates) return;
@@ -124,22 +124,22 @@ export default function Schedule() {
     return all.map((session: any) => {
       // Extract captain info
       const captainName = session.captain?.firstName || session.captain?.username || "Unknown";
-      
+
       // Extract location info
       const locationName = session.location?.name || "Unknown Location";
-      
+
       // Determine if user has joined (you'll need to check members array based on your logic)
-      const hasJoined = session.members?.some((member: any) => 
+      const hasJoined = session.members?.some((member: any) =>
         member._id === user?._id || member.userId === user?._id
       ) || false;
 
       // Format start time if available
-      const startTime = session.startTime 
-        ? new Date(session.startTime).toLocaleTimeString('en-US', { 
-            hour: '2-digit', 
-            minute: '2-digit',
-            hour12: false 
-          })
+      const startTime = session.startTime
+        ? new Date(session.startTime).toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false
+        })
         : "TBD";
 
       // Calculate match duration or current minute
@@ -327,7 +327,7 @@ export default function Schedule() {
     };
 
     return (
-      <TouchableOpacity 
+      <TouchableOpacity
         onPress={handleJoinSession}
         className="border-b border-gray-200 items-center justify-center p-3"
       >
@@ -335,6 +335,12 @@ export default function Schedule() {
         <View className="mb-3 flex w-full flex-row items-center justify-between">
           <Text className="origin-center rotate-[-90deg] text-sm font-medium">{match.time}</Text>
           <View className="w-full flex-1 flex-col relative items-start gap-2 whitespace-nowrap border-l-[1px] border-[#DFDFDF] pl-4">
+            <View className='flex flex-row  border-[0.1px] border-primary'>
+              <ThemedText lightColor='#00FF94'>
+
+                {match.sessionData.location.name}
+              </ThemedText>
+            </View>
             <View className='flex-row flex-1 items-center justify-between w-full pr-[23px]'>
               <View className="flex flex-row items-center gap-2">
                 <View className="h-8 w-8 items-center justify-center">
@@ -524,9 +530,9 @@ export default function Schedule() {
                       {expandedAll[teamSchedule.teamName] && (
                         <View className="border-b-2 border-b-[#00FF94]">
                           {teamSchedule.matches.map((match, idx) => (
-                            <ScheduleMatchCard 
-                              key={idx} 
-                              match={match} 
+                            <ScheduleMatchCard
+                              key={idx}
+                              match={match}
                               sessionData={match.sessionData}
                             />
                           ))}
@@ -570,9 +576,9 @@ export default function Schedule() {
                         {expandedTournaments[teamSchedule.teamName] && (
                           <View className="border-b-2 border-b-[#00FF94]">
                             {teamSchedule.matches.map((match, idx) => (
-                              <ScheduleMatchCard 
-                                key={idx} 
-                                match={match} 
+                              <ScheduleMatchCard
+                                key={idx}
+                                match={match}
                                 sessionData={match.sessionData}
                               />
                             ))}
@@ -617,9 +623,9 @@ export default function Schedule() {
                         {expandedFriendlies[teamSchedule.teamName] && (
                           <View className="border-b-2 border-b-[#00FF94]">
                             {teamSchedule.matches.map((match, idx) => (
-                              <ScheduleMatchCard 
-                                key={idx} 
-                                match={match} 
+                              <ScheduleMatchCard
+                                key={idx}
+                                match={match}
                                 sessionData={match.sessionData}
                               />
                             ))}
@@ -664,9 +670,9 @@ export default function Schedule() {
                         {expandedSets[teamSchedule.teamName] && (
                           <View className="border-b-2 border-b-[#00FF94]">
                             {teamSchedule.matches.map((match, idx) => (
-                              <ScheduleMatchCard 
-                                key={idx} 
-                                match={match} 
+                              <ScheduleMatchCard
+                                key={idx}
+                                match={match}
                                 sessionData={match.sessionData}
                               />
                             ))}

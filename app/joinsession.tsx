@@ -9,11 +9,9 @@ import PitchIcon from '@/assets/svg/PitchSvg';
 import PlayerInfoCard from './playerinfocard';
 import BackIcon from '@/assets/svg/BackIcon';
 import { useAppDispatch, useAppSelector } from '@/redux/store';
-import Toast from 'react-native-toast-message';
+import { Toast } from 'toastify-react-native';
 import { joinSession } from '@/api/sessions';
-import pitch from '@/assets/images/greenpitch.png';
-
-
+import useMatchScore from '@/hooks/useMatchScore';
 
 export default function JoinSession() {
   const colorScheme = useColorScheme();
@@ -23,12 +21,31 @@ export default function JoinSession() {
   const [loading, setLoading] = useState(false);
   const params = useLocalSearchParams();
   const sessionData = params.session ? JSON.parse(params.session as string) : null;
-  // console.log('data', sessionData)
-  const { user } = useAppSelector(
-    (state) => state.auth
-  );
-  // console.log(user)
-  // Helper function to format date
+  
+  const { user } = useAppSelector((state) => state.auth);
+
+  // Connect to session stream to get live updates for all matches in this session
+  const sessionScore = useMatchScore({
+    sessionId: sessionData?._id,
+    onScoreUpdate: (data) => {
+      console.log('Live score update received:', data);
+      Toast.show({
+        type: 'info',
+        text1: 'Score Update',
+        text2: `${data.teamOne.name} ${data.teamOneScore} - ${data.teamTwoScore} ${data.teamTwo.name}`,
+      });
+    },
+    onError: (error) => {
+      console.error('SSE error:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'SSE error',
+        text2: `${error}`,
+      });
+    }
+  });
+
+  // Helper functions
   const formatDate = (dateString: string) => {
     if (!dateString) return 'Date TBD';
     const date = new Date(dateString);
@@ -38,48 +55,7 @@ export default function JoinSession() {
       day: 'numeric'
     });
   };
-  const handleJoinSession = async () => {
-    if (!sessionData?._id) {
-      Toast.show({
-        type: 'error',
-        props: {
-          title: 'Error',
-          message: 'Session ID not found',
-        },
-      });
-      return;
-    }
 
-    setLoading(true);
-    dispatch(joinSession({ sessionId: sessionData._id }))
-      .unwrap()
-      .then((response) => {
-        setLoading(false);
-        console.log('Join session response:', response);
-        Toast.show({
-          type: 'success',
-          props: {
-            title: 'Success',
-            message: response.message || 'Successfully joined session',
-          },
-        });
-        // Optional: navigate back or refresh data
-        router.back();
-      })
-      .catch((err) => {
-        setLoading(false);
-        console.log('Join session error:', err);
-        const message = err?.msg?.message || err?.msg || 'Failed to join session';
-        Toast.show({
-          type: 'error',
-          props: {
-            title: 'Error',
-            message: message,
-          },
-        });
-      });
-  };
-  // Helper function to format time
   const formatTime = (dateString: string) => {
     if (!dateString) return 'Time TBD';
     const date = new Date(dateString);
@@ -89,10 +65,7 @@ export default function JoinSession() {
       hour12: true
     });
   };
-  const isMember = sessionData?.members?.some(
-    (member: any) => member._id === user?._id
-  );
-  // Helper function to calculate duration
+
   const getDuration = (timeDuration: number) => {
     if (!timeDuration) return 'TBD';
     const hours = Math.floor(timeDuration / 60);
@@ -102,7 +75,6 @@ export default function JoinSession() {
     return `${minutes} minutes`;
   };
 
-  // Helper function to format winning decider
   const formatWinningDecider = (decider: string) => {
     const deciderMap: { [key: string]: string } = {
       'penalties': 'Shootout',
@@ -113,11 +85,47 @@ export default function JoinSession() {
     return deciderMap[decider] || decider || 'TBD';
   };
 
-  // Helper function to get match duration text
   const getMatchDuration = (minsPerSet: number) => {
     if (!minsPerSet) return 'Golden Goal';
     return `${minsPerSet} minutes per set`;
   };
+
+  const handleJoinSession = async () => {
+    if (!sessionData?._id) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Session ID not found',
+      });
+      return;
+    }
+
+    setLoading(true);
+    dispatch(joinSession({ sessionId: sessionData._id }))
+      .unwrap()
+      .then((response) => {
+        setLoading(false);
+        Toast.show({
+          type: 'success',
+          text1: 'Success',
+          text2: response.message || 'Successfully joined session',
+        });
+        router.back();
+      })
+      .catch((err) => {
+        setLoading(false);
+        const message = err?.msg?.message || err?.msg || 'Failed to join session';
+        Toast.show({
+          type: 'error',
+          text1: 'Error',
+          text2: message,
+        });
+      });
+  };
+
+  const isMember = sessionData?.members?.some(
+    (member: any) => member._id === user?._id
+  );
 
   if (!sessionData) {
     return (
@@ -144,26 +152,49 @@ export default function JoinSession() {
           paddingBottom: 40,
           flexGrow: 1,
         }}>
-        <View className="flex flex-col gap-[31px]  ">
+        <View className="flex flex-col gap-[31px]">
           <View className="mx-[32px] flex flex-col gap-[31px]">
+            {/* Session Status with Live Connection Indicator */}
             <View className="w-full rounded-[10px] border-[1px] border-[#43B75D] bg-[#ECF8EF] p-[16px]">
               <View className="flex flex-col gap-[4px]">
-                <ThemedText
-                  lightColor="#6C757D"
-                  darkColor="#9BA1A6"
-                  className="text-[14px] font-[600] leading-[24px]  text-black">
-                  {sessionData.inProgress
-                    ? 'Match In Progress'
-                    : sessionData.finished
-                      ? 'Match Finished'
-                      : sessionData.isFull
-                        ? 'Session Full'
-                        : 'Waiting For Players'
-                  }
-                </ThemedText>
+                <View className="flex flex-row items-center justify-between">
+                  <ThemedText
+                    lightColor="#6C757D"
+                    darkColor="#9BA1A6"
+                    className="text-[14px] font-[600] leading-[24px] text-black">
+                    {sessionData.inProgress
+                      ? 'Match In Progress'
+                      : sessionData.finished
+                        ? 'Match Finished'
+                        : sessionData.isFull
+                          ? 'Session Full'
+                          : 'Waiting For Players'
+                    }
+                  </ThemedText>
+                  
+                  {/* Live Connection Status Indicator */}
+                  <View className="flex flex-row items-center gap-1">
+                    <View 
+                      className={`w-2 h-2 rounded-full ${
+                        sessionScore.connected ? 'bg-green-500' : 'bg-red-500'
+                      }`} 
+                    />
+                    <Text className="text-[10px] text-[#6D717F]">
+                      {sessionScore.connected ? 'Live' : 'Offline'}
+                    </Text>
+                  </View>
+                </View>
+                
                 <Text className="text-[11px] text-[#6D717F]">
                   {sessionData.members?.length || 0} / {sessionData.maxNumber || 0} players joined
                 </Text>
+
+                {/* Show error if connection fails */}
+                {sessionScore.error && (
+                  <Text className="text-[10px] text-red-500 mt-1">
+                    {sessionScore.error}
+                  </Text>
+                )}
               </View>
             </View>
 
@@ -177,12 +208,11 @@ export default function JoinSession() {
                   <ThemedText
                     lightColor={theme.text}
                     darkColor={theme.text}
-                    className="text-[20px]  font-[600]">
+                    className="text-[20px] font-[600]">
                     {sessionData.captain?.firstName || sessionData.captain?.username || 'Session'}
                   </ThemedText>
                 </View>
 
-                {/* 👇 ONLY THIS ICON OPENS DROPDOWN */}
                 <TouchableOpacity onPress={() => setShowDetails(!showDetails)} activeOpacity={0.6}>
                   <OpenIcon />
                 </TouchableOpacity>
@@ -192,13 +222,13 @@ export default function JoinSession() {
                 <ThemedText
                   lightColor={theme.text}
                   darkColor={theme.text}
-                  className="text-[13px] font-[400]  text-black">
+                  className="text-[13px] font-[400] text-black">
                   {sessionData.location?.name || 'Location TBD'}, {sessionData.location?.address || ''}
                 </ThemedText>
                 <ThemedText
                   lightColor={theme.text}
                   darkColor={theme.text}
-                  className="text-[13px] font-[400]  text-black">
+                  className="text-[13px] font-[400] text-black">
                   {formatDate(sessionData.startTime)} • {formatTime(sessionData.startTime)}
                 </ThemedText>
               </View>
@@ -217,20 +247,18 @@ export default function JoinSession() {
                     <Text className="text-[10px] font-[400] text-white">Match Ended</Text>
                   </View>
                 ) : isMember ? (
-                  // 🔥 USER ALREADY JOINED → SHOW "Assign Sets"
                   <TouchableOpacity
                     className="flex w-[120px] items-center justify-center rounded-[5px] bg-primary p-[10px]"
                     onPress={() => router.push({
                       pathname: '/assigned',
-                           params: {
-            session: JSON.stringify(sessionData)
-          }
+                      params: {
+                        session: JSON.stringify(sessionData)
+                      }
                     })}
                   >
                     <Text className="text-[10px] font-[400] text-white">Assign Sets</Text>
                   </TouchableOpacity>
                 ) : (
-                  // 🔥 USER NOT A MEMBER → SHOW "Join session"
                   <TouchableOpacity
                     className="flex w-[120px] items-center justify-center rounded-[5px] bg-primary p-[10px]"
                     onPress={handleJoinSession}
@@ -243,9 +271,7 @@ export default function JoinSession() {
                     )}
                   </TouchableOpacity>
                 )}
-
               </View>
-
             </View>
           </View>
 
@@ -254,13 +280,13 @@ export default function JoinSession() {
               <ThemedText
                 lightColor={theme.text}
                 darkColor={theme.text}
-                className="text-[15px] font-[500]  text-black">
+                className="text-[15px] font-[500] text-black">
                 Lineups
               </ThemedText>
               <ThemedText
                 lightColor={theme.text}
                 darkColor={theme.text}
-                className="text-[15px] font-[500]  text-black">
+                className="text-[15px] font-[500] text-black">
                 Squad List
               </ThemedText>
             </View>
@@ -269,7 +295,7 @@ export default function JoinSession() {
             </View>
           </View>
 
-          {/* 👇 PLAYER CARDS - Dynamic from members array */}
+          {/* Player Cards */}
           {sessionData.members && sessionData.members.length > 0 ? (
             sessionData.members.map((member: any, index: number) => (
               <PlayerInfoCard
@@ -285,28 +311,31 @@ export default function JoinSession() {
         </View>
       </ScrollView>
 
-
-
+      {/* Session Details Dropdown */}
       {showDetails && (
         <>
-
           <Pressable
             onPress={() => setShowDetails(false)}
             style={{
-
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0,0,0,0.3)',
+              zIndex: 200,
             }}
           />
 
-          {/* DROPDOWN PANEL */}
           <View
             style={{
               position: 'absolute',
-              top: 250, // adjust if needed
+              top: 250,
               left: 0,
               right: 0,
               zIndex: 300,
             }}
-            className="rounded-[10px]  bg-[#F2F2F2] px-[31px] py-[40px] shadow-lg">
+            className="rounded-[10px] bg-[#F2F2F2] px-[31px] py-[40px] shadow-lg">
             <View className="mb-[17px] flex flex-row justify-between">
               <Text className="text-[14px] text-[#2A2A2A]">Duration:</Text>
               <Text className="text-[14px] font-[600] text-black">
