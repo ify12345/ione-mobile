@@ -1,30 +1,30 @@
 /* eslint-disable react/no-unescaped-entities */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import {
-  Dimensions,
-  View,
-  TouchableWithoutFeedback,
-  useColorScheme,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
-} from 'react-native';
-import * as yup from 'yup';
-import * as React from 'react';
 import { Formik } from 'formik';
+import * as React from 'react';
+import {
+    Dimensions,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    TouchableWithoutFeedback,
+    useColorScheme,
+    View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import * as yup from 'yup';
 
+import { login } from '@/api/authThunks';
+import InputField from '@/components/InputField';
 import Loader from '@/components/loader';
+import SafeAreaScreen from '@/components/SafeAreaScreen';
 import { ThemedText } from '@/components/ThemedText';
 import CustomButton from '@/components/ui/CustomButton';
-import InputField from '@/components/InputField';
-import { useRouter } from 'expo-router';
-import SafeAreaScreen from '@/components/SafeAreaScreen';
-import { Colors } from '@/constants/Colors';
 import { Icon } from '@/components/ui/Icon';
-import { Toast } from 'toastify-react-native';
+import { Colors } from '@/constants/Colors';
 import { useAppDispatch } from '@/redux/store';
-import { login } from '@/api/authThunks';
+import { useRouter } from 'expo-router';
+import { Toast } from 'toastify-react-native';
 
 
 const { width } = Dimensions.get('screen');
@@ -80,7 +80,8 @@ export default function SignIn() {
           text1: 'Success',
           text2: response.message || 'Login successful',
         });
-        router.replace('/(tabs)');
+        // router.replace('/(tabs)');
+        router.replace('/admin/(tabs)');
       })
       .catch((err) => {
         setLoading(false);

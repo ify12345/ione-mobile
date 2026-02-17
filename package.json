@@ -11,6 +11,8 @@
     "lint": "expo lint"
   },
   "dependencies": {
+    "@expo-google-fonts/playfair-display": "^0.4.2",
+    "@expo-google-fonts/poppins": "^0.4.1",
     "@expo/ui": "~0.2.0-beta.7",
     "@expo/vector-icons": "^15.0.2",
     "@gorhom/bottom-sheet": "^5.2.4",
@@ -25,7 +27,7 @@
     "expo": "^54.0.18",
     "expo-blur": "~15.0.7",
     "expo-constants": "~18.0.10",
-    "expo-font": "~14.0.9",
+    "expo-font": "~14.0.11",
     "expo-haptics": "~15.0.7",
     "expo-image": "~3.0.10",
     "expo-image-picker": "~17.0.10",
