@@ -1,16 +1,57 @@
 import LocationIcon from "@/assets/svg/LocationIcon";
 import SettingsIcon from "@/assets/svg/SettingsIcon";
-import FixtureList from "@/components/FixtureList";
+import Recent from "@/components/Recent";
 import SafeAreaScreen from "@/components/SafeAreaScreen";
 import { ThemedText } from "@/components/ThemedText";
 import { ImageBackground } from "expo-image";
+import { StatusBar } from "expo-status-bar";
 import React from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+
+const matches = [
+  {
+    id: 1,
+    date: "2/7/25",
+    type: "Friendly Match",
+    home: "TN",
+    homeName: "Team Name",
+    away: "TN",
+    awayName: "Team Name",
+    homeScore: 1,
+    awayScore: 4,
+  },
+  {
+    id: 2,
+    date: "15/3/25",
+    type: "Kings League",
+    home: "TN",
+    homeName: "Team Name",
+    away: "TN",
+    awayName: "Team Name",
+    homeScore: 1,
+    awayScore: 4,
+  },
+  {
+    id: 3,
+    date: "2/7/25",
+    type: "Friendly Match",
+    home: "TN",
+    homeName: "Team Name",
+    away: "TN",
+    awayName: "Team Name",
+    homeScore: 1,
+    awayScore: 4,
+  },
+];
 
 export default function AdminHomeScreen() {
   return (
-    <SafeAreaScreen className="flex-1">
-      <ImageBackground source={require("@/assets/images/adminHeader.png")}>
+    <View className="flex-1">
+      <ImageBackground
+        style={{ paddingTop: 20 }}
+        source={require("@/assets/images/adminHeader.png")}
+      >
+        <StatusBar style="auto" />
         <View className="px-[35px] pt-5 pb-6">
           <View className="flex flex-row items-center justify-between">
             <Text
@@ -19,12 +60,13 @@ export default function AdminHomeScreen() {
             >
               Pitch Condition: Excellent
             </Text>
-            <View className="flex flex-row gap-2">
-              <TouchableOpacity className="bg-[#FFFFFF33]  py-2 px-2 rounded-[10px]">
-                <SettingsIcon width={14} height={14} color="#2D264B" />
+            <View className="flex flex-row items-center gap-2">
+              <TouchableOpacity className="bg-[#FFFFFF33] py-2 px-2 rounded-[10px]">
+                <SettingsIcon width={16} height={16} color="#2D264B" />
               </TouchableOpacity>
-              <TouchableOpacity className="bg-[#FFFFFF33]  py-2 px-2 rounded-[10px]">
-                <SettingsIcon width={14} height={14} color="#2D264B" />
+
+              <TouchableOpacity className="bg-[#FFFFFF33] py-2 px-2 rounded-[10px]">
+                <Text>🌤️</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -47,15 +89,35 @@ export default function AdminHomeScreen() {
           </View>
         </View>
       </ImageBackground>
-      <View className="px-[35px] mt-7">
-        <ThemedText
-          style={{ fontFamily: "Poppins_600SemiBold" }}
-          className="text-black text-[15px] mb-5"
+      <SafeAreaScreen className="flex-1">
+        <ScrollView
+          contentContainerStyle={{ paddingHorizontal: 35 }}
+          showsVerticalScrollIndicator={false}
         >
-          Recents
-        </ThemedText>
-        <FixtureList />
-      </View>
-    </SafeAreaScreen>
+          <ThemedText
+            style={{ fontFamily: "Poppins_600SemiBold" }}
+            className="text-black text-[15px] mb-5"
+          >
+            Recents
+          </ThemedText>
+
+          <View className="gap-4">
+            {matches.map((match) => (
+              <Recent
+                key={match.id}
+                date={match.date}
+                type={match.type}
+                homeTeam={match.home}
+                awayTeam={match.away}
+                awayTeamName={match.awayName}
+                homeTeamName={match.homeName}
+                homeScore={match.homeScore}
+                awayScore={match.awayScore}
+              />
+            ))}
+          </View>
+        </ScrollView>
+      </SafeAreaScreen>
+    </View>
   );
 }
