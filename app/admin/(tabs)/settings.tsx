@@ -11,7 +11,7 @@ export default function AdminSettingsScreen() {
   const router = useRouter();
   return (
     <SafeAreaScreen className="flex-1">
-      <View className="py-6 px-[35px] flex-1 justify-center">
+      <View className="py-6 px-[35px] flex-1 justify-between">
         <View>
           <View className="flex flex-row items-center justify-between">
             <ThemedText
@@ -72,7 +72,7 @@ export default function AdminSettingsScreen() {
           </View>
         </View>
 
-        <View className="flex flex-row mt-auto items-center justify-between">
+        <View className="flex flex-row items-center justify-between">
           <ThemedText
             style={{ fontFamily: "Poppins_500Medium" }}
             className="text-black text-[15px]"
