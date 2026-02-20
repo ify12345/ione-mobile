@@ -1,54 +1,64 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack, useRouter } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
-import '@/globals.css';
-import { useColorScheme } from '@/hooks/useColorScheme';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
-import React, { useEffect } from 'react';
-import store, { persistor, useAppDispatch, useAppSelector } from '@/redux/store';
-import Toast from 'react-native-toast-message';
-import { Provider } from 'react-redux';
-import { PersistGate } from 'redux-persist/integration/react';
-import ToastManager from 'toastify-react-native'
-import { setupAxiosInterceptors } from '@/utils/SetUpAxiosInterceptors';
-import toastConfig from '@/utils/toast';
-import { getUser } from '@/api/authThunks';
+import { getUser } from "@/api/authThunks";
+import "@/globals.css";
+import { useColorScheme } from "@/hooks/useColorScheme";
+import store, {
+  persistor,
+  useAppDispatch,
+  useAppSelector,
+} from "@/redux/store";
+import { setupAxiosInterceptors } from "@/utils/SetUpAxiosInterceptors";
+import toastConfig from "@/utils/toast";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
+import {
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider,
+} from "@react-navigation/native";
+import { useFonts } from "expo-font";
+import { Stack, useRouter } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import React, { useEffect } from "react";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import "react-native-reanimated";
+import Toast from "react-native-toast-message";
+import { Provider } from "react-redux";
+import { PersistGate } from "redux-persist/integration/react";
+import ToastManager from "toastify-react-native";
 
 setupAxiosInterceptors();
 
 function AppNavigator() {
   const router = useRouter();
-    const dispatch = useAppDispatch(); 
+  const dispatch = useAppDispatch();
   const { isAuthenticated, user, isRegistered, isVerified } = useAppSelector(
-    (state) => state.auth
+    (state) => state.auth,
   );
-  console.log('user',user.location?.coordinates)
+  console.log("user", user.location?.coordinates);
   useEffect(() => {
     if (isAuthenticated && user) {
-      router.replace('/(tabs)');
+      //   router.replace('/(tabs)');
+      router.replace("/admin/(tabs)");
     } else if (isRegistered && !isVerified) {
       router.replace("/(onboarding)/verify");
     } else if (isVerified && !isAuthenticated) {
-      router.replace('/(onboarding)/signin');
+      router.replace("/(onboarding)/signin");
     } else {
-      router.replace('/(onboarding)');
+      router.replace("/(onboarding)");
     }
   }, [isAuthenticated, user, isRegistered, isVerified]);
 
- useEffect(() => {
-  
-      console.log('Token exists, fetching user data...');
-      dispatch(getUser()).unwrap().then((response) => {
-        console.log('User data fetched successfully',response);
-      }).catch((err) => {
-          const message = err?.msg?.message || err?.msg
-        console.error('Failed to fetch user data:', message);
+  useEffect(() => {
+    console.log("Token exists, fetching user data...");
+    dispatch(getUser())
+      .unwrap()
+      .then((response) => {
+        console.log("User data fetched successfully", response);
+      })
+      .catch((err) => {
+        const message = err?.msg?.message || err?.msg;
+        console.error("Failed to fetch user data:", message);
       });
-  
   }, [dispatch]);
 
   return (
@@ -61,7 +71,7 @@ function AppNavigator() {
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
 
   if (!loaded) {
@@ -69,15 +79,14 @@ export default function RootLayout() {
     return null;
   }
 
-
-
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
-
         <GestureHandlerRootView style={{ flex: 1 }}>
           <BottomSheetModalProvider>
-            <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+            <ThemeProvider
+              value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+            >
               <AppNavigator />
 
               <StatusBar style="auto" />
@@ -88,12 +97,10 @@ export default function RootLayout() {
                 visibilityTime={4000}
                 autoHide
               />
-
             </ThemeProvider>
-             <ToastManager />
+            <ToastManager />
           </BottomSheetModalProvider>
         </GestureHandlerRootView>
-       
       </PersistGate>
     </Provider>
   );
