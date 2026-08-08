@@ -1,7 +1,7 @@
-import { ThemedText } from "@/components/ThemedText";
-import { router } from "expo-router";
 import React from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View, useColorScheme } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 
 interface SessionCardProps {
   match: any;
@@ -9,202 +9,350 @@ interface SessionCardProps {
 }
 
 export function SessionCard({ match, sessionData }: SessionCardProps) {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
   const session = sessionData ?? match.sessionData;
 
   const handlePress = () => {
     if (!match.sessionId) return;
-
     router.push({
       pathname: "/joinsession",
-      params: {
-        sessionId: match.sessionId,
-        session: JSON.stringify(session),
-      },
+      params: { sessionId: match.sessionId, session: JSON.stringify(session) },
     });
   };
 
   const playerCount = match.playerCount ?? 0;
   const maxPlayers = match.maxPlayers ?? 0;
+  const fillPct = maxPlayers > 0 ? Math.min(playerCount / maxPlayers, 1) : 0;
 
   const isLive = match.inProgress;
   const isFinished = match.finished;
-
+  const isFull = match.isFull;
   const isPaymentStage =
     match.paymentRequired &&
-    match.isFull &&
+    isFull &&
     !match.allPaymentsCompleted &&
     !isLive &&
     !isFinished;
 
-  const isWaitingForPlayers = !match.isFull && !isLive && !isFinished;
+  const cardBg = isDark ? "#111" : "#FFF";
+  const cardBorder = isDark ? "#1E1E1E" : "#EFEFEF";
+  const innerBg = isDark ? "#1A1A1A" : "#F5F5F5";
+  const primaryText = isDark ? "#FFF" : "#111";
+  const mutedText = isDark ? "#666" : "#999";
+  const subText = isDark ? "#AAA" : "#666";
+  const divider = isDark ? "#1E1E1E" : "#F0F0F0";
 
-  const getStatus = () => {
-    if (isFinished) {
+  const statusConfig = (() => {
+    if (isFinished)
       return {
         label: "Finished",
-        color: "#929292",
-        background: "#F1F1F1",
+        color: "#888",
+        bg: isDark ? "#1A1A1A" : "#F0F0F0",
+        dot: false,
       };
-    }
-
-    if (isLive) {
-      return {
-        label: `LIVE ${match.minute}`,
-        color: "#000",
-        background: "#00FF94",
-      };
-    }
-
-    if (isPaymentStage) {
-      return {
-        label: "Payment required",
-        color: "#000",
-        background: "#FFB800",
-      };
-    }
-
-    if (isWaitingForPlayers) {
-      return {
-        label: "Waiting for players",
-        color: "#555",
-        background: "#EDEDED",
-      };
-    }
-
+    if (isLive)
+      return { label: "LIVE", color: "#000", bg: "#00FF94", dot: true };
+    if (isPaymentStage)
+      return { label: "Pay Now", color: "#7A4F00", bg: "#FFE082", dot: false };
+    if (isFull)
+      return { label: "Full", color: subText, bg: innerBg, dot: false };
     return {
-      label: "Ready",
-      color: "#000",
-      background: "#00FF94",
+      label: "Open",
+      color: "#005C34",
+      bg: isDark ? "#0D2B1F" : "#D4FFF0",
+      dot: false,
     };
-  };
+  })();
 
-  const status = getStatus();
+  const actionLabel = (() => {
+    if (isFinished || isLive) return "View";
+    if (match.joined && isPaymentStage) return "Pay";
+    if (match.joined) return "Joined";
+    if (isFull) return "Full";
+    return "Join";
+  })();
 
-  const getActionLabel = () => {
-    if (isFinished) return "VIEW";
-    if (isLive) return "VIEW";
+  const actionStyle = (() => {
+    if (actionLabel === "Joined")
+      return { bg: isDark ? "#0D2B1F" : "#E8FFF4", color: "#00CC77" };
+    if (actionLabel === "Pay") return { bg: "#FFB800", color: "#000" };
+    if (actionLabel === "Full") return { bg: innerBg, color: mutedText };
+    return { bg: "#00FF94", color: "#000" };
+  })();
 
-    if (match.joined) {
-      if (isPaymentStage) return "PAY";
-      return "JOINED";
-    }
+  const fillBarColor =
+    fillPct >= 1
+      ? isPaymentStage
+        ? "#FFB800"
+        : "#00FF94"
+      : fillPct > 0.6
+        ? "#FFB800"
+        : "#00FF94";
 
-    return "JOIN";
-  };
+  const matchTypeLabel = match.matchType
+    ? match.matchType.charAt(0).toUpperCase() + match.matchType.slice(1)
+    : "Friendly";
 
-  const actionLabel = getActionLabel();
+  const spotsLeft = maxPlayers - playerCount;
+
+  const footerNote = (() => {
+    if (isFinished) return "Session completed";
+    if (isLive) return `Match in progress · ${match.minute}`;
+    if (isPaymentStage) return "Waiting for all payments";
+    if (isFull) return "Session is full";
+    return `${spotsLeft} spot${spotsLeft !== 1 ? "s" : ""} remaining`;
+  })();
 
   return (
     <TouchableOpacity
-      activeOpacity={0.8}
+      activeOpacity={0.82}
       onPress={handlePress}
-      className="mb-4 w-full overflow-hidden rounded-[10px] border border-[#E5E5E5] bg-white"
+      style={{
+        marginBottom: 12,
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: cardBorder,
+        backgroundColor: cardBg,
+        shadowColor: "#000",
+        shadowOpacity: isDark ? 0 : 0.05,
+        shadowRadius: 10,
+        shadowOffset: { width: 0, height: 2 },
+        elevation: 2,
+        overflow: "hidden",
+      }}
     >
-      <View className="flex-row items-start justify-between px-4 pt-4">
-        {/* Time + match type */}
-        <View className="flex-1">
-          <Text className="text-[15px] font-[700] text-black">
-            {match.time}
-          </Text>
+      {/* Live accent bar */}
+      {isLive && (
+        <View
+          style={{ height: 3, backgroundColor: "#00FF94", width: "100%" }}
+        />
+      )}
 
-          <Text className="mt-[2px] text-[12px] text-[#999]">
-            {match.matchType
-              ? match.matchType.charAt(0).toUpperCase() +
-                match.matchType.slice(1)
-              : "Friendly"}
+      {/* Header: location + status */}
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "flex-start",
+          justifyContent: "space-between",
+          paddingHorizontal: 16,
+          paddingTop: 16,
+          paddingBottom: 12,
+        }}
+      >
+        <View style={{ flex: 1, marginRight: 12 }}>
+          <Text
+            numberOfLines={1}
+            style={{
+              fontSize: 16,
+              fontWeight: "700",
+              color: primaryText,
+              letterSpacing: -0.2,
+            }}
+          >
+            {match.locationName}
           </Text>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 4,
+              marginTop: 3,
+            }}
+          >
+            <Ionicons name="person-outline" size={11} color={mutedText} />
+            <Text style={{ fontSize: 12, color: mutedText }}>
+              {match.captainName}
+            </Text>
+          </View>
         </View>
 
         {/* Status badge */}
         <View
-          className="ml-3 rounded-full px-3 py-[5px]"
           style={{
-            backgroundColor: status.background,
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 5,
+            backgroundColor: statusConfig.bg,
+            borderRadius: 20,
+            paddingHorizontal: 10,
+            paddingVertical: 5,
           }}
         >
+          {statusConfig.dot && (
+            <View
+              style={{
+                width: 6,
+                height: 6,
+                borderRadius: 3,
+                backgroundColor: statusConfig.color,
+              }}
+            />
+          )}
           <Text
-            className="text-[10px] font-[700]"
             style={{
-              color: status.color,
+              fontSize: 10,
+              fontWeight: "800",
+              color: statusConfig.color,
             }}
           >
-            {status.label}
+            {statusConfig.label}
           </Text>
         </View>
       </View>
 
-      <View className="px-4 pt-4">
-        <ThemedText
-          lightColor="#111"
-          darkColor="#fff"
-          className="text-[17px] font-[700]"
-        >
-          {match.locationName}
-        </ThemedText>
+      {/* Divider */}
+      <View
+        style={{ height: 1, backgroundColor: divider, marginHorizontal: 16 }}
+      />
 
-        <Text className="mt-1 text-[12px] text-[#929292]">
-          Captain: {match.captainName}
-        </Text>
+      {/* Info chips row */}
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 8,
+          paddingHorizontal: 16,
+          paddingTop: 12,
+          paddingBottom: 4,
+          flexWrap: "wrap",
+        }}
+      >
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 5,
+            backgroundColor: innerBg,
+            borderRadius: 8,
+            paddingHorizontal: 10,
+            paddingVertical: 6,
+          }}
+        >
+          <Ionicons name="time-outline" size={12} color={mutedText} />
+          <Text style={{ fontSize: 12, fontWeight: "600", color: primaryText }}>
+            {match.time}
+          </Text>
+        </View>
+
+        <View
+          style={{
+            backgroundColor: innerBg,
+            borderRadius: 8,
+            paddingHorizontal: 10,
+            paddingVertical: 6,
+          }}
+        >
+          <Text style={{ fontSize: 12, fontWeight: "600", color: primaryText }}>
+            {matchTypeLabel}
+          </Text>
+        </View>
+
+        {match.paymentRequired && (
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 4,
+              backgroundColor: isPaymentStage
+                ? isDark
+                  ? "#2A1A00"
+                  : "#FFF8E0"
+                : innerBg,
+              borderRadius: 8,
+              paddingHorizontal: 10,
+              paddingVertical: 6,
+            }}
+          >
+            <Text style={{ fontSize: 12, color: mutedText }}>₦</Text>
+            <Text
+              style={{
+                fontSize: 12,
+                fontWeight: "700",
+                color: isPaymentStage ? "#CC8800" : primaryText,
+              }}
+            >
+              {Number(match.paymentAmount ?? 0).toLocaleString()}
+            </Text>
+          </View>
+        )}
       </View>
 
-      <View className="mx-4 mt-4 flex-row items-center justify-between rounded-[8px] bg-[#F7F7F7] px-3 py-3">
-        <View>
-          <Text className="text-[11px] text-[#929292]">Players</Text>
-
-          <Text className="mt-[2px] text-[15px] font-[700] text-black">
+      {/* Players fill bar */}
+      <View style={{ paddingHorizontal: 16, paddingTop: 14, paddingBottom: 4 }}>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 7,
+          }}
+        >
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
+            <Ionicons name="people-outline" size={13} color={subText} />
+            <Text style={{ fontSize: 11, color: subText }}>Players</Text>
+          </View>
+          <Text style={{ fontSize: 13, fontWeight: "700", color: primaryText }}>
             {playerCount}
             {maxPlayers > 0 ? ` / ${maxPlayers}` : ""}
           </Text>
         </View>
 
-        <View className="items-end">
-          <Text className="text-[11px] text-[#929292]">Session</Text>
-
-          <Text className="mt-[2px] text-[13px] font-[600] text-black">
-            {match.matchType
-              ? match.matchType.charAt(0).toUpperCase() +
-                match.matchType.slice(1)
-              : "Friendly"}
-          </Text>
-        </View>
+        {maxPlayers > 0 && (
+          <View
+            style={{
+              height: 5,
+              borderRadius: 3,
+              backgroundColor: isDark ? "#242424" : "#EBEBEB",
+              overflow: "hidden",
+            }}
+          >
+            <View
+              style={{
+                height: 5,
+                borderRadius: 3,
+                backgroundColor: fillBarColor,
+                width: `${Math.round(fillPct * 100)}%`,
+              }}
+            />
+          </View>
+        )}
       </View>
 
-      {match.paymentRequired && (
-        <View className="px-4 pt-3">
-          <View className="flex-row items-center justify-between">
-            <Text className="text-[12px] text-[#929292]">Payment</Text>
-
-            <Text className="text-[13px] font-[700] text-black">
-              ₦{Number(match.paymentAmount ?? 0).toLocaleString()}
-            </Text>
-          </View>
-
-          {isPaymentStage && (
-            <Text className="mt-1 text-[11px] text-[#FF9900]">
-              Session is full. Players can now complete payment.
-            </Text>
-          )}
-        </View>
-      )}
-
-      <View className="mt-4 flex-row items-center justify-between border-t border-[#EEEEEE] px-4 py-3">
-        <Text className="mr-3 flex-1 text-[11px] text-[#999]">
-          {isFinished
-            ? "Session completed"
-            : isLive
-              ? "Session currently in progress"
-              : isPaymentStage
-                ? "Waiting for payments"
-                : `${maxPlayers > 0 ? maxPlayers - playerCount : 0} spots available`}
+      {/* Footer */}
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          borderTopWidth: 1,
+          borderTopColor: divider,
+          marginTop: 14,
+          paddingHorizontal: 16,
+          paddingVertical: 12,
+        }}
+      >
+        <Text
+          style={{ fontSize: 11, color: mutedText, flex: 1, marginRight: 10 }}
+        >
+          {footerNote}
         </Text>
 
         <View
-          className="rounded-[6px] px-4 py-2"
           style={{
-            backgroundColor: actionLabel === "JOINED" ? "#EAEAEA" : "#00FF94",
+            borderRadius: 10,
+            paddingHorizontal: 18,
+            paddingVertical: 9,
+            backgroundColor: actionStyle.bg,
           }}
         >
-          <Text className="text-[11px] font-[800] text-black">
+          <Text
+            style={{
+              fontSize: 12,
+              fontWeight: "800",
+              color: actionStyle.color,
+            }}
+          >
             {actionLabel}
           </Text>
         </View>
