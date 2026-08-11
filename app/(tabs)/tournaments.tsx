@@ -1,24 +1,24 @@
 import { getTournamentsByLocation } from "@/api/tournamentThunk";
 import { nearByLocation } from "@/api/sessions";
 import { useAppDispatch, useAppSelector } from "@/redux/store";
-import CalendarIcon from "@/assets/svg/CalendarIcon";
 import LocationIcon from "@/assets/svg/LocationIcon";
-import PlusIcon from "@/assets/svg/PlusIcon";
-import TournamentIcon from "@/assets/svg/TournamentIcon";
 import SafeAreaScreen from "@/components/SafeAreaScreen";
 import { ThemedText } from "@/components/ThemedText";
-import { Colors } from "@/constants/Colors";
 import { router } from "expo-router";
-import React, { useMemo, useEffect } from "react";
+import React, { useMemo, useEffect, useState, useCallback } from "react";
 import ChevronRight from "@/assets/svg/ChevronRight";
+import { TournamentsHeader } from "@/components/tournaments/tournaments-header";
 import {
   Image,
   ScrollView,
   Text,
   TouchableOpacity,
   useColorScheme,
+  RefreshControl,
   View,
 } from "react-native";
+import CustomDatePicker from "@/components/modals/CustomDatePicker";
+import { DateStrip } from "@/components/sessions/DateStrip";
 
 type DateItem = {
   id: number;
@@ -27,165 +27,123 @@ type DateItem = {
   isToday: boolean;
 };
 
-export default function TournamentScreen() {
+export default function TournamentScreen({ title = "Tournaments" }) {
+  const [dates, setDates] = useState<DateItem[]>([]);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [isCalendarVisible, setCalendarVisible] = useState(false);
+  const [calendarDate, setCalendarDate] = useState(new Date());
+  const [refreshing, setRefreshing] = useState(false);
+
   const colorScheme = useColorScheme();
-  const theme = Colors[colorScheme ?? "light"];
+  const isDark = colorScheme === "dark";
+
   const dispatch = useAppDispatch();
   const { user } = useAppSelector((state) => state.auth);
   const { pitches } = useAppSelector((state) => state.sessions);
   const { tournamentsByLocation } = useAppSelector((state) => state.tournament);
 
+  const screenBg = isDark ? "#000" : "#FAFAFA";
+  const mutedText = isDark ? "#555" : "#999";
+  const primaryText = isDark ? "#FFF" : "#111";
+
   useEffect(() => {
     if (!user?.location?.coordinates) return;
+
     const [lng, lat] = user.location.coordinates;
 
-    dispatch(nearByLocation({ lat, lng }));
+    dispatch(nearByLocation({ lat: 6.45306, lng: 3.42158 }));
   }, [dispatch, user?.location?.coordinates]);
 
-  useEffect(() => {
-    if (!pitches || pitches.length === 0) return;
-    const nearestLocationId = pitches[0]._id;
+  //   console.log("pitches", pitches);
 
-    dispatch(getTournamentsByLocation(nearestLocationId));
+  useEffect(() => {
+    if (!pitches?.length) return;
+
+    const tournamentPitches = pitches.filter(
+      (pitch) => pitch?.tournament === true,
+    );
+
+    tournamentPitches.forEach((pitch) => {
+      if (!pitch._id) return;
+
+      dispatch(getTournamentsByLocation(pitch._id));
+    });
   }, [dispatch, pitches]);
 
-  console.log("result", tournamentsByLocation);
-  const dates = useMemo<DateItem[]>(() => {
+  const handleRefresh = useCallback(async () => {
+    if (!user?.location?.coordinates) return;
+    setRefreshing(true);
+    try {
+      const [lng, lat] = user.location.coordinates;
+      const result = await dispatch(nearByLocation({ lat, lng })).unwrap();
+
+      const tournamentPitches = (result ?? []).filter(
+        (pitch) => pitch?.tournament === true && pitch?._id,
+      );
+
+      await Promise.all(
+        tournamentPitches.map((pitch) =>
+          dispatch(getTournamentsByLocation(pitch._id)).unwrap(),
+        ),
+      );
+    } catch (error) {
+      console.error("Failed to refresh tournaments:", error);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [dispatch, user]);
+
+  useEffect(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-
-    return Array.from({ length: 30 }, (_, index) => {
-      const date = new Date(today);
-      date.setDate(date.getDate() + index);
-
-      return {
-        id: date.getTime(),
-        dateNumber: `${date.getDate()}`,
-        dayName: date.toLocaleDateString("en-US", { weekday: "short" }),
-        isToday: date.getTime() === today.getTime(),
-      };
-    });
+    setDates(
+      Array.from({ length: 30 }, (_, i) => {
+        const d = new Date(today);
+        d.setDate(d.getDate() + i);
+        return {
+          id: d.getTime(),
+          dateNumber: `${d.getDate()}`,
+          dayName: d.toLocaleDateString("en-US", { weekday: "short" }),
+          isToday: i === 0,
+        };
+      }),
+    );
   }, []);
 
-  const CalendarPolygon = ({
-    date,
-    day,
-    isActive,
-    isToday,
-  }: {
-    date: string;
-    day: string;
-    isActive: boolean;
-    isToday: boolean;
-  }) => (
-    <TouchableOpacity className="items-center gap-1">
-      <View className="h-[51px] w-[51px] items-center justify-center">
-        {isActive ? (
-          <View className="relative h-full w-full">
-            <Image
-              source={require("@/assets/images/activepolygon.png")}
-              resizeMode="contain"
-              className="h-full w-full"
-            />
-            <View className="absolute inset-0 items-center justify-center">
-              <Text className="text-base font-semibold text-black">{date}</Text>
-            </View>
-          </View>
-        ) : (
-          <View className="relative h-full w-full">
-            <Image
-              source={require("@/assets/images/inactivepolygon.png")}
-              resizeMode="contain"
-              className="h-full w-full"
-            />
-            <View className="absolute inset-0 items-center justify-center">
-              <Text className="text-base font-semibold text-[#929292]">
-                {date}
-              </Text>
-            </View>
-          </View>
-        )}
-      </View>
-      <ThemedText
-        lightColor={theme.text}
-        darkColor={theme.text}
-        className="px-4 text-center text-base leading-6"
-      >
-        {day}
-      </ThemedText>
-      {isToday && (
-        <Text className="text-xs font-medium text-[#00FF94]">Today</Text>
-      )}
-    </TouchableOpacity>
-  );
+  console.log("result", tournamentsByLocation);
 
-  const tournamentSessions = [
+  const tournaments = [
     {
-      _id: "victoria-island-cup-1",
-      tournamentName: "Island Champions Cup",
-      captain: { _id: "captain-1", firstName: "Lagos", username: "Lagos FC" },
-      location: {
-        name: "Victoria Island",
-        address: "Victoria Island, Lagos",
-      },
-      startTime: new Date().toISOString(),
-      timeDuration: 90,
-      minsPerSet: 30,
-      matchType: "tournament",
-      playersPerTeam: 5,
-      setNumber: 3,
-      winningDecider: "highestGoals",
-      maxNumber: 10,
-      members: [
-        { _id: "player-1", firstName: "Team Alpha" },
-        { _id: "player-2", firstName: "Team Beta" },
-      ],
-      inProgress: false,
-      finished: false,
-      isFull: false,
-      teams: {
-        teamOne: "Team Alpha",
-        teamTwo: "Team Beta",
-      },
+      _id: "507f1",
+      name: "Victoria Island Cup",
+      status: "registration",
+      type: "knockout",
+      maxTeams: 8,
+      registeredTeams: ["507f2", "507f3"],
+      startDate: "2026-05-10T09:00:00.000Z",
+      endDate: "2026-05-12T09:00:00.000Z",
+      registrationDeadline: "2026-05-01T00:00:00.000Z",
+      prizeMoney: 50000000,
+      registrationFee: 200000,
+      code: "AB1C2D",
+      winner: null,
     },
     {
-      _id: "victoria-island-cup-2",
-      tournamentName: "VI Night League",
-      captain: { _id: "captain-2", firstName: "Island", username: "Island FC" },
-      location: {
-        name: "Victoria Island",
-        address: "Victoria Island, Lagos",
-      },
-      startTime: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
-      timeDuration: 60,
-      minsPerSet: 20,
-      matchType: "tournament",
-      playersPerTeam: 6,
-      setNumber: 3,
-      winningDecider: "goldenGoal",
-      maxNumber: 12,
-      members: [
-        { _id: "player-3", firstName: "VI Strikers" },
-        { _id: "player-4", firstName: "Marina FC" },
-      ],
-      inProgress: false,
-      finished: false,
-      isFull: false,
-      teams: {
-        teamOne: "VI Strikers",
-        teamTwo: "Marina FC",
-      },
+      _id: "507f4",
+      name: "VI Night League",
+      status: "registration",
+      type: "knockout",
+      maxTeams: 12,
+      registeredTeams: ["507f5", "507f6"],
+      startDate: "2026-06-15T18:00:00.000Z",
+      endDate: "2026-06-20T22:00:00.000Z",
+      registrationDeadline: "2026-06-10T00:00:00.000Z",
+      prizeMoney: 75000000,
+      registrationFee: 250000,
+      code: "XY9KLM",
+      winner: null,
     },
   ];
-
-  const openTournament = (session: (typeof tournamentSessions)[number]) => {
-    router.push({
-      pathname: "/tournamentdetail",
-      params: {
-        session: JSON.stringify(session),
-      },
-    });
-  };
 
   const getInitials = (name: string) =>
     name
@@ -195,118 +153,109 @@ export default function TournamentScreen() {
       .slice(0, 2)
       .toUpperCase();
 
+  const handleDatePress = (item: DateItem) => {
+    const d = new Date(item.id);
+    setSelectedDate((prev) => (prev?.getTime() === item.id ? null : d));
+  };
+
+  const handleNewTournament = () => {
+    router.push({
+      pathname: "/",
+      params: { locationId: "" },
+    });
+  };
+
   return (
-    <SafeAreaScreen>
+    <SafeAreaScreen style={{ backgroundColor: screenBg }}>
+      <TournamentsHeader
+        title={title}
+        isDark={isDark}
+        onCalendarPress={() => setCalendarVisible(true)}
+        onNewTournament={handleNewTournament}
+      />
+
       <ScrollView
-        className="mb-[40px] h-full flex-1"
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{
-          paddingBottom: 40,
-          flexGrow: 1,
-        }}
+        contentContainerStyle={{ paddingBottom: 60 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor="#00FF94"
+            colors={["#00FF94"]}
+          />
+        }
       >
-        <View className="flex-col gap-4 lg:flex-row">
-          <View className="w-full">
-            <View className="flex flex-col gap-[25px] px-[32px] py-6">
-              <View className="mb-6 flex-row items-center justify-between">
-                <ThemedText
-                  lightColor={theme.text}
-                  darkColor={theme.text}
-                  className="text-[20px] font-[600]"
-                >
-                  Tournaments
-                </ThemedText>
-                <CalendarIcon />
-              </View>
+        <CustomDatePicker
+          date={calendarDate}
+          isVisible={isCalendarVisible}
+          onClose={() => setCalendarVisible(false)}
+          onChange={(d) => {
+            setCalendarDate(d);
+            setSelectedDate(d);
+          }}
+        />
 
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                className="mb-6 pb-2"
-              >
-                <View className="flex-row gap-3">
-                  {dates.map((item) => (
-                    <CalendarPolygon
-                      key={item.id}
-                      date={item.dateNumber}
-                      day={item.dayName}
-                      isActive={item.isToday}
-                      isToday={item.isToday}
-                    />
-                  ))}
-                </View>
-              </ScrollView>
+        <View style={{ marginBottom: 20 }}>
+          <DateStrip
+            dates={dates}
+            selectedDate={selectedDate}
+            onDatePress={handleDatePress}
+            isDark={isDark}
+          />
+        </View>
+
+        <View className="mt-[18px] w-full px-[32px]">
+          <TouchableOpacity className="mb-[18px] flex w-full flex-row items-center justify-between rounded-[5px] border border-[#7D7D7D] px-[21px] py-[15px]">
+            <Text className="text-base text-[#696969]">Search location</Text>
+            <View className="h-7 w-7 items-center justify-center rounded-full bg-[#00FF94]">
+              <LocationIcon />
             </View>
-            <View className="w-full border-t-[1px] border-[#464242]" />
-          </View>
+          </TouchableOpacity>
 
-          <View className="mt-[18px] w-full px-[32px]">
-            <TouchableOpacity className="mb-[18px] flex w-full flex-row items-center justify-between rounded-[5px] border border-[#7D7D7D] px-[21px] py-[15px]">
-              <Text className="text-base text-[#696969]">Search location</Text>
-              <View className="h-7 w-7 items-center justify-center rounded-full bg-[#00FF94]">
-                <LocationIcon />
-              </View>
-            </TouchableOpacity>
-
-            <View className="gap-3">
-              {tournamentsByLocation?.map((tournament) => (
-                <TouchableOpacity
-                  key={tournament._id}
-                  className="flex-row items-center justify-between border-b border-[#DFDFDF] px-[16px] py-[14px]"
-                  onPress={() =>
-                    router.push({
-                      pathname: "/",
-                      params: {
-                        tournamentId: tournament._id,
-                        tournamentName: tournament.name,
-                      },
-                    })
-                  }
-                >
-                  <View className="flex-row items-center gap-3">
-                    <View className="h-[40px] w-[40px] items-center justify-center">
-                      <View className="relative h-full w-full">
-                        <Image
-                          source={require("@/assets/images/activepolygon.png")}
-                          resizeMode="contain"
-                          className="h-full w-full"
-                        />
-                        <View className="absolute inset-0 items-center justify-center">
-                          <ThemedText className="text-sm">
-                            {getInitials(tournament.name)}{" "}
-                          </ThemedText>
-                        </View>
+          <View className="gap-3">
+            {tournamentsByLocation?.map((tournament) => (
+              <TouchableOpacity
+                key={tournament._id}
+                className="flex-row items-center justify-between border-b border-[#DFDFDF] px-[16px] py-[14px]"
+                onPress={() =>
+                  router.push({
+                    pathname: "/tournamentdetail",
+                    params: {
+                      tournamentId: tournament._id,
+                      tournamentName: tournament.name,
+                    },
+                  })
+                }
+              >
+                <View className="flex-row items-center gap-3">
+                  <View className="h-[40px] w-[40px] items-center justify-center">
+                    <View className="relative h-full w-full">
+                      <Image
+                        source={require("@/assets/images/activepolygon.png")}
+                        resizeMode="contain"
+                        className="h-full w-full"
+                      />
+                      <View className="absolute inset-0 items-center justify-center">
+                        <ThemedText className="text-sm">
+                          {getInitials(tournament.name)}{" "}
+                        </ThemedText>
                       </View>
                     </View>
-
-                    <Text className="text-lg font-semibold text-black">
-                      {tournament.name}
-                    </Text>
                   </View>
 
-                  <View className="flex-row items-center">
-                    <View className="h-12 w-[1.5px] bg-[#DFDFDF] mr-2" />
+                  <Text className="text-lg font-semibold text-black">
+                    {tournament.name}
+                  </Text>
+                </View>
 
-                    <ChevronRight width={24} height={24} />
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
+                <View className="flex-row items-center">
+                  <View className="h-12 w-[1.5px] bg-[#DFDFDF] mr-2" />
 
-          <View className="mt-[18px] px-[32px]">
-            <TouchableOpacity
-              className="flex w-full flex-row items-center justify-between rounded-[5px] border border-[#7D7D7D] px-[21px] py-[15px]"
-              onPress={() => router.push("/screens/tournamentform")}
-            >
-              <View className="flex-row items-center gap-3">
-                <TournamentIcon color="#696969" width={20} height={20} />
-                <Text className="text-base text-[#696969]">
-                  Create tournament
-                </Text>
-              </View>
-              <PlusIcon />
-            </TouchableOpacity>
+                  <ChevronRight width={24} height={24} />
+                </View>
+              </TouchableOpacity>
+            ))}
           </View>
         </View>
       </ScrollView>

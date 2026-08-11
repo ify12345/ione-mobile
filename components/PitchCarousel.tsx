@@ -49,6 +49,7 @@ const PitchCarousel: React.FC<PitchCarouselProps> = ({ data }) => {
   }).current;
   const [loadingId, setLoadingId] = useState(false);
   const dispatch = useAppDispatch();
+
   const handleStartSession = (locationId: string) => {
     setLoadingId(true);
     dispatch(startSession({ locationId }))
@@ -61,14 +62,8 @@ const PitchCarousel: React.FC<PitchCarouselProps> = ({ data }) => {
           props: {
             title: "Success",
             message: response.message || "Session started successfully",
-            //
           },
         });
-        // Toast.show({
-        //   type: "success",
-        //   text1: "You are officially the captain of this ball session!",
-        //   text2: response.message || "Session created successfully",
-        // });
         router.push(`/screens/newsession?locationId=${response._id}`);
       })
       .catch((err: any) => {
@@ -86,13 +81,32 @@ const PitchCarousel: React.FC<PitchCarouselProps> = ({ data }) => {
       });
   };
 
+  const handleCreateTournaments = (locationId: string) => {
+    router.push({
+      pathname: "/screens/tournamentform",
+      params: {
+        locationId,
+      },
+    });
+  };
+
   const handlePress = (item: PitchData) => {
     Alert.alert(
-      "Create Session",
-      "Do you want to create a session at this location?",
+      item.name,
+      "What would you like to do?",
       [
-        { text: "Cancel", style: "cancel" },
-        { text: "Yes", onPress: () => handleStartSession(item.id) },
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Create Session",
+          onPress: () => handleStartSession(item.id),
+        },
+        {
+          text: "Create Tournament",
+          onPress: () => handleCreateTournaments(item.id),
+        },
       ],
       { cancelable: true },
     );
