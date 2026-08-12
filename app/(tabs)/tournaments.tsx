@@ -7,7 +7,9 @@ import { ThemedText } from "@/components/ThemedText";
 import { router } from "expo-router";
 import React, { useMemo, useEffect, useState, useCallback } from "react";
 import ChevronRight from "@/assets/svg/ChevronRight";
+import { Ionicons } from "@expo/vector-icons";
 import { TournamentsHeader } from "@/components/tournaments/tournaments-header";
+import { TournamentSkeletonCard } from "@/components/tournaments/tournament-skeleton-card";
 import {
   Image,
   ScrollView,
@@ -40,7 +42,11 @@ export default function TournamentScreen({ title = "Tournaments" }) {
   const dispatch = useAppDispatch();
   const { user } = useAppSelector((state) => state.auth);
   const { pitches } = useAppSelector((state) => state.sessions);
-  const { tournamentsByLocation } = useAppSelector((state) => state.tournament);
+  const {
+    tournamentsByLocation,
+    loadingTournamentsByLocation,
+    errorTournamentsByLocation,
+  } = useAppSelector((state) => state.tournament);
 
   const screenBg = isDark ? "#000" : "#FAFAFA";
   const mutedText = isDark ? "#555" : "#999";
@@ -53,8 +59,6 @@ export default function TournamentScreen({ title = "Tournaments" }) {
 
     dispatch(nearByLocation({ lat: 6.45306, lng: 3.42158 }));
   }, [dispatch, user?.location?.coordinates]);
-
-  //   console.log("pitches", pitches);
 
   useEffect(() => {
     if (!pitches?.length) return;
@@ -75,7 +79,9 @@ export default function TournamentScreen({ title = "Tournaments" }) {
     setRefreshing(true);
     try {
       const [lng, lat] = user.location.coordinates;
-      const result = await dispatch(nearByLocation({ lat, lng })).unwrap();
+      const result = await dispatch(
+        nearByLocation({ lat: 6.45306, lng: 3.42158 }),
+      ).unwrap();
 
       const tournamentPitches = (result ?? []).filter(
         (pitch) => pitch?.tournament === true && pitch?._id,
@@ -110,41 +116,6 @@ export default function TournamentScreen({ title = "Tournaments" }) {
     );
   }, []);
 
-  console.log("result", tournamentsByLocation);
-
-  const tournaments = [
-    {
-      _id: "507f1",
-      name: "Victoria Island Cup",
-      status: "registration",
-      type: "knockout",
-      maxTeams: 8,
-      registeredTeams: ["507f2", "507f3"],
-      startDate: "2026-05-10T09:00:00.000Z",
-      endDate: "2026-05-12T09:00:00.000Z",
-      registrationDeadline: "2026-05-01T00:00:00.000Z",
-      prizeMoney: 50000000,
-      registrationFee: 200000,
-      code: "AB1C2D",
-      winner: null,
-    },
-    {
-      _id: "507f4",
-      name: "VI Night League",
-      status: "registration",
-      type: "knockout",
-      maxTeams: 12,
-      registeredTeams: ["507f5", "507f6"],
-      startDate: "2026-06-15T18:00:00.000Z",
-      endDate: "2026-06-20T22:00:00.000Z",
-      registrationDeadline: "2026-06-10T00:00:00.000Z",
-      prizeMoney: 75000000,
-      registrationFee: 250000,
-      code: "XY9KLM",
-      winner: null,
-    },
-  ];
-
   const getInitials = (name: string) =>
     name
       .split(" ")
@@ -164,6 +135,8 @@ export default function TournamentScreen({ title = "Tournaments" }) {
       params: { locationId: "" },
     });
   };
+
+  const showSkeletons = loadingTournamentsByLocation || refreshing;
 
   return (
     <SafeAreaScreen style={{ backgroundColor: screenBg }}>
@@ -213,49 +186,148 @@ export default function TournamentScreen({ title = "Tournaments" }) {
             </View>
           </TouchableOpacity>
 
-          <View className="gap-3">
-            {tournamentsByLocation?.map((tournament) => (
-              <TouchableOpacity
-                key={tournament._id}
-                className="flex-row items-center justify-between border-b border-[#DFDFDF] px-[16px] py-[14px]"
-                onPress={() =>
-                  router.push({
-                    pathname: "/tournamentdetail",
-                    params: {
-                      tournamentId: tournament._id,
-                      tournamentName: tournament.name,
-                    },
-                  })
-                }
+          <View style={{ paddingHorizontal: 20 }}>
+            {showSkeletons ? (
+              // Loading state
+              [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
+                <TournamentSkeletonCard key={n} isDark={isDark} />
+              ))
+            ) : errorTournamentsByLocation ? (
+              // Error state
+              <View
+                style={{
+                  alignItems: "center",
+                  paddingVertical: 60,
+                }}
               >
-                <View className="flex-row items-center gap-3">
-                  <View className="h-[40px] w-[40px] items-center justify-center">
-                    <View className="relative h-full w-full">
-                      <Image
-                        source={require("@/assets/images/activepolygon.png")}
-                        resizeMode="contain"
-                        className="h-full w-full"
-                      />
-                      <View className="absolute inset-0 items-center justify-center">
-                        <ThemedText className="text-sm">
-                          {getInitials(tournament.name)}{" "}
+                <Ionicons name="wifi-outline" size={40} color={mutedText} />
+
+                <Text
+                  style={{
+                    color: mutedText,
+                    marginTop: 12,
+                    fontSize: 14,
+                    textAlign: "center",
+                  }}
+                >
+                  {errorTournamentsByLocation}
+                </Text>
+
+                <TouchableOpacity
+                  onPress={() => {
+                    if (pitches?.length) {
+                      pitches
+                        .filter(
+                          (pitch) => pitch?.tournament === true && pitch._id,
+                        )
+                        .forEach((pitch) => {
+                          dispatch(getTournamentsByLocation(pitch._id));
+                        });
+                    }
+                  }}
+                  style={{
+                    marginTop: 16,
+                    backgroundColor: "#00FF94",
+                    borderRadius: 10,
+                    paddingHorizontal: 20,
+                    paddingVertical: 10,
+                  }}
+                >
+                  <Text style={{ fontWeight: "700", fontSize: 13 }}>Retry</Text>
+                </TouchableOpacity>
+              </View>
+            ) : tournamentsByLocation?.length === 0 ? (
+              // Empty state
+              <View
+                style={{
+                  alignItems: "center",
+                  paddingVertical: 60,
+                }}
+              >
+                <Ionicons name="trophy-outline" size={40} color={mutedText} />
+
+                <Text
+                  style={{
+                    color: mutedText,
+                    marginTop: 12,
+                    fontSize: 14,
+                    textAlign: "center",
+                  }}
+                >
+                  No tournaments found nearby.
+                </Text>
+              </View>
+            ) : (
+              // Success state
+              <View style={{ gap: 12 }}>
+                {tournamentsByLocation?.map((tournament) => (
+                  <TouchableOpacity
+                    key={tournament._id}
+                    className="flex-row items-center justify-between border-b border-[#DFDFDF] px-[16px] py-[14px]"
+                    onPress={() =>
+                      router.push({
+                        pathname: "/tournamentdetail",
+                        params: {
+                          tournamentId: tournament._id,
+                        },
+                      })
+                    }
+                  >
+                    <View className="flex-row items-center gap-3">
+                      {/* Tournament initials */}
+                      <View className="h-[40px] w-[40px] items-center justify-center">
+                        <View className="relative h-full w-full">
+                          <Image
+                            source={require("@/assets/images/activepolygon.png")}
+                            resizeMode="contain"
+                            className="h-full w-full"
+                          />
+
+                          <View className="absolute inset-0 items-center justify-center">
+                            <ThemedText className="text-sm">
+                              {getInitials(tournament.name)}
+                            </ThemedText>
+                          </View>
+                        </View>
+                      </View>
+
+                      {/* Tournament name */}
+                      <View>
+                        <ThemedText className="text-lg font-semibold">
+                          {tournament.name}
                         </ThemedText>
+
+                        <Text
+                          className="mt-1 text-xs"
+                          style={{ color: mutedText }}
+                        >
+                          {tournament.status
+                            ? tournament.status.charAt(0).toUpperCase() +
+                              tournament.status.slice(1)
+                            : "Tournament"}
+                        </Text>
                       </View>
                     </View>
-                  </View>
 
-                  <Text className="text-lg font-semibold text-black">
-                    {tournament.name}
-                  </Text>
-                </View>
+                    {/* Navigate to tournament details */}
+                    <View className="flex-row items-center">
+                      <View
+                        className="mr-2 h-12 w-[1.5px]"
+                        style={{
+                          backgroundColor: isDark ? "#333" : "#DFDFDF",
+                        }}
+                      />
 
-                <View className="flex-row items-center">
-                  <View className="h-12 w-[1.5px] bg-[#DFDFDF] mr-2" />
-
-                  <ChevronRight width={24} height={24} />
-                </View>
-              </TouchableOpacity>
-            ))}
+                      <ChevronRight
+                        width={24}
+                        height={24}
+                        color={isDark ? "#CCC" : "#DFDFDF"}
+                      />
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
           </View>
         </View>
       </ScrollView>

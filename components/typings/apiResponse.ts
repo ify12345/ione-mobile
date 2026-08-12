@@ -551,6 +551,7 @@ export interface TournamentDetailsResponse {
   bracket: TournamentMatch[];
   registeredTeams: RegisteredTeam[];
   organizer: Organizer;
+  startDate: string;
   winner: string | null;
 }
 
