@@ -2,6 +2,7 @@ import React from "react";
 import AdminNotificationIcon from "@/assets/svg/AdminNotificationIcon";
 import { ThemedText } from "@/components/ThemedText";
 import { SettingsHeader } from "@/components/admin/settings/SettingsHeader";
+import { WalletsHeader } from "@/components/admin/wallets/wallets-header";
 import { SettingsRow } from "@/components/admin/settings/SettingsRow";
 import { SettingsSection } from "@/components/admin/settings/SettingsSection";
 import { logout } from "@/redux/reducers/auth";
@@ -20,7 +21,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Toast } from "toastify-react-native";
 
-export default function AdminSettingsScreen() {
+export default function AdminWalletScreen() {
   const { colorScheme } = useColorScheme();
   const isDark = colorScheme === "dark";
   const router = useRouter();
@@ -101,7 +102,7 @@ export default function AdminSettingsScreen() {
             flexDirection: "row",
             alignItems: "center",
             justifyContent: "space-between",
-            marginBottom: 4,
+            marginBottom: 20,
           }}
         >
           <ThemedText
@@ -109,7 +110,7 @@ export default function AdminSettingsScreen() {
             lightColor="#000"
             darkColor="#fff"
           >
-            Settings
+            Wallets
           </ThemedText>
 
           <TouchableOpacity
@@ -130,83 +131,29 @@ export default function AdminSettingsScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Profile card */}
-        <SettingsHeader
-          firstName={user?.firstName ?? ""}
-          lastName={user?.lastName ?? ""}
-          email={user?.email ?? ""}
-          nickname={user?.nickname}
-        />
+        {/* Wallet card */}
 
-        {/* Pitch Management */}
-        <SettingsSection title="Pitch">
-          <SettingsRow
-            icon="schedule"
-            iconColor="#00FF94"
-            label="Open Hours"
-            // rightElement={
-            //   <ThemedText
-            //     style={{ fontFamily: "Poppins_400Regular", fontSize: 13 }}
-            //     lightColor="#999"
-            //     darkColor="#666"
-            //   >
-            //     {openHours}
-            //   </ThemedText>
-            // }
-            onPress={() => router.push("/admin/open-hours")}
-          />
+        <WalletsHeader availableBalance={"60,000"} ledgerBalance={"60,000"} />
+
+        {/* Wallet Management */}
+        <SettingsSection title="Wallet details">
           <SettingsRow
             icon="grass"
             iconColor="#4CAF50"
-            label="Pitch Condition"
+            label="Bank Accounts"
             onPress={() => router.push("/admin/pitchcondition")}
           />
           <SettingsRow
             icon="attach-money"
             iconColor="#FF9800"
-            label="Pricing Options"
+            label="Withdraw"
             onPress={() => router.push("/admin/pricingoption")}
           />
-        </SettingsSection>
-
-        {/* Account */}
-        <SettingsSection title="Account">
           <SettingsRow
-            icon="lock-outline"
-            iconColor="#2196F3"
-            label="Change Password"
-            onPress={() => router.push("/admin/changepassword")}
-          />
-          <SettingsRow
-            icon="receipt-long"
-            iconColor="#9C27B0"
-            label="Transaction History"
-            onPress={() => router.push("/admin/transactionhistory")}
-          />
-          <SettingsRow
-            icon="notifications-none"
-            iconColor="#FF5722"
-            label="Notifications"
-            onPress={() => router.navigate("/admin/notification")}
-          />
-        </SettingsSection>
-
-        {/* Danger zone */}
-        <SettingsSection title="Account Actions">
-          <SettingsRow
-            icon="logout"
-            iconColor="#FF5252"
-            label="Logout"
-            onPress={handleLogout}
-            showChevron={false}
-          />
-          <SettingsRow
-            icon="delete-forever"
-            iconColor="#FF1744"
-            label="Delete Account"
-            labelColor="#FF1744"
-            onPress={handleDeleteAccount}
-            showChevron={false}
+            icon="attach-money"
+            iconColor="#FF9800"
+            label="Fund Wallet"
+            onPress={() => router.push("/admin/pricingoption")}
           />
         </SettingsSection>
       </ScrollView>

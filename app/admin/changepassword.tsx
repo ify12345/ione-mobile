@@ -9,6 +9,7 @@ import { ScrollView, TouchableOpacity, View } from "react-native";
 import * as yup from "yup";
 import { Toast } from "toastify-react-native";
 import { useRouter } from "expo-router";
+import { useColorScheme } from "nativewind";
 
 type ChangePasswordInput = {
   oldPassword: string;
@@ -17,6 +18,9 @@ type ChangePasswordInput = {
 };
 
 export default function AdminChangePasswordScreen() {
+  const { colorScheme } = useColorScheme();
+  const isDark = colorScheme === "dark";
+
   const dispatch = useAppDispatch();
   const router = useRouter();
   const scrollViewRef = React.useRef<ScrollView>(null);
@@ -26,6 +30,9 @@ export default function AdminChangePasswordScreen() {
   const { loadingChangePassword } = useAppSelector(
     (state) => state.ownerDashboard,
   );
+
+  const screenBg = isDark ? "#000" : "#FAFAFA";
+
   const initialValues = {
     oldPassword: "",
     newPassword: "",
@@ -60,7 +67,7 @@ export default function AdminChangePasswordScreen() {
     }
   };
   return (
-    <View className="flex-1 dark:bg-black">
+    <View style={{ flex: 1, backgroundColor: screenBg }}>
       <View className="pb-6 pt-16 px-[35px] flex-1">
         <View>
           <View className="flex flex-row items-center justify-between">
@@ -72,8 +79,11 @@ export default function AdminChangePasswordScreen() {
             >
               Change Password
             </ThemedText>
-            <TouchableOpacity className="bg-[#00FF943B] rounded-[10px] w-[30px] h-[32px] items-center justify-center">
-              <AdminNotificationIcon />
+            <TouchableOpacity className="bg-[#00FF943B] rounded-[10px] w-[38px] h-[38px] items-center justify-center">
+              <AdminNotificationIcon
+                color={isDark ? "#FFFFFF" : "#2D264B"}
+                dotColor="#03EA89"
+              />
             </TouchableOpacity>
           </View>
         </View>

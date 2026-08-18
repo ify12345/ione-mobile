@@ -58,6 +58,14 @@ function AdminAppNavigator() {
       />
 
       <Stack.Screen
+        name="open-hours"
+        options={{
+          title: "Open Hours",
+          headerShown: false,
+        }}
+      />
+
+      <Stack.Screen
         name="transactionhistory"
         options={{
           title: "Transaction History",

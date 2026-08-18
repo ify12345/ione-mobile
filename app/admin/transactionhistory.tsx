@@ -10,8 +10,14 @@ import { useAppDispatch, useAppSelector } from "@/redux/store";
 import dayjs from "dayjs";
 import React, { useEffect } from "react";
 import { ScrollView, TouchableOpacity, View } from "react-native";
+import { useColorScheme } from "nativewind";
 
 export default function AdminTransactionHistoryScreen() {
+  const { colorScheme } = useColorScheme();
+  const isDark = colorScheme === "dark";
+
+  const screenBg = isDark ? "#000" : "#FAFAFA";
+
   const recentActivity = [
     {
       id: 1,
@@ -114,7 +120,7 @@ export default function AdminTransactionHistoryScreen() {
   }, [dispatch, location?._id]);
 
   return (
-    <View className="flex-1 dark:bg-black">
+    <View style={{ flex: 1, backgroundColor: screenBg }}>
       <View className="pb-6 pt-16 px-[35px] flex-1">
         <View>
           <View className="flex flex-row items-center justify-between">
@@ -126,8 +132,11 @@ export default function AdminTransactionHistoryScreen() {
             >
               Transaction History
             </ThemedText>
-            <TouchableOpacity className="bg-[#00FF943B] rounded-[10px] w-[30px] h-[32px] items-center justify-center">
-              <AdminNotificationIcon />
+            <TouchableOpacity className="bg-[#00FF943B] rounded-[10px] w-[38px] h-[38px] items-center justify-center">
+              <AdminNotificationIcon
+                color={isDark ? "#FFFFFF" : "#2D264B"}
+                dotColor="#03EA89"
+              />
             </TouchableOpacity>
           </View>
 
