@@ -66,18 +66,6 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
-        name="wallets"
-        options={{
-          title: "Wallets",
-
-          tabBarIcon: ({ color }) => (
-            <MaterialIcons name="wallet" size={24} color={color} />
-            // <SettingsIcon color={color} width={28} height={28} />
-          ),
-        }}
-      />
-
-      <Tabs.Screen
         name="settings"
         options={{
           title: "Settings",

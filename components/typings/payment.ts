@@ -36,6 +36,7 @@ export interface WalletBalance {
   balance: number;
   ledgerBalance: number;
   currency: string;
+  status?: string;
 }
 
 export interface WalletTransaction {
@@ -45,3 +46,35 @@ export interface WalletTransaction {
   description: string;
   createdAt: string;
 }
+
+export interface WithdrawFundsResponse {
+  authorizationUrl: string;
+  reference: string;
+  amount: number;
+}
+
+export interface BankAccountResponse {
+  accountNumber: string;
+  bankCode: string;
+  bankName: string;
+}
+
+export interface Bank {
+  _id: string;
+  paystackId: number;
+  name: string;
+  slug: string;
+  code: string;
+  longcode: string;
+  gateway: string;
+  payWithBank: boolean;
+  supportsTransfer: boolean;
+  availableForDirectDebit: boolean;
+  active: boolean;
+  country: string;
+  currency: string;
+  type: string;
+  isDeleted: boolean;
+}
+
+export type GetBanksResponse = Bank[];

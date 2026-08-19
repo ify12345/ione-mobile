@@ -80,6 +80,30 @@ function AdminAppNavigator() {
           headerShown: false,
         }}
       />
+
+      <Stack.Screen
+        name="wallets"
+        options={{
+          title: "Wallets",
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="fund-wallet"
+        options={{
+          title: "Fund Wallet",
+          headerShown: false,
+        }}
+      />
+
+      <Stack.Screen
+        name="bank-account"
+        options={{
+          title: "Bank Account",
+          headerShown: false,
+        }}
+      />
+
       <Stack.Screen
         name="onboarding"
         options={{

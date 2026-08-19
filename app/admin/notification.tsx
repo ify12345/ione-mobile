@@ -17,6 +17,7 @@ export default function Notification() {
     (state) => state.ownerDashboard.latestNotification,
   );
 
+  const isDark = colorScheme === "dark";
   useEffect(() => {
     let es: EventSource;
 
@@ -59,7 +60,7 @@ export default function Notification() {
   }, []);
 
   return (
-    <View className="flex-1 bg-white dark:bg-black">
+    <View style={{ flex: 1, backgroundColor: isDark ? "#000" : "#f5f5f5" }}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{

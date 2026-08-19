@@ -2,8 +2,10 @@ import type MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import type { ReactNode } from "react";
 
 export interface WalletsHeaderProps {
-  availableBalance: string;
-  ledgerBalance: string;
+  availableBalance: number;
+  ledgerBalance: number;
+  currency: string;
+  status: string;
 }
 
 export interface SettingsRowProps {
