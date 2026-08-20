@@ -12,6 +12,7 @@ import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Text, TextInput, TouchableOpacity, View } from "react-native";
 import { Toast } from "toastify-react-native";
+import CustomButton from "@/components/ui/CustomButton";
 
 export default function AdminPricingOptionScreen() {
   const tier = [
@@ -104,7 +105,7 @@ export default function AdminPricingOptionScreen() {
         text2: res.message || "Updated successfully",
       });
 
-      router.replace("/admin/(tabs)");
+      router.back();
     } catch (err: any) {
       Toast.show({
         type: "error",
@@ -116,28 +117,30 @@ export default function AdminPricingOptionScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: screenBg }}>
-      <View className="pb-6 pt-16 px-[35px] flex-1">
+      <View className="pb-6 pt-16 px-[20px] flex-1">
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 32,
+            marginBottom: 32,
+          }}
+        >
+          <TouchableOpacity onPress={() => router.back()}>
+            <Ionicons
+              name="arrow-back"
+              size={22}
+              color={isDark ? "#fff" : "#111"}
+            />
+          </TouchableOpacity>
+          <ThemedText style={{ fontSize: 17, fontWeight: "700" }}>
+            Pricing Options
+          </ThemedText>
+        </View>
         <View>
-          <View className="flex flex-row items-center justify-between">
-            <ThemedText
-              darkColor="#FFFFFF"
-              lightColor="#000000"
-              style={{ fontFamily: "Poppins_600SemiBold" }}
-              className="text-xl"
-            >
-              Pricing Options
-            </ThemedText>
-            <TouchableOpacity className="bg-[#00FF943B] rounded-[10px] w-[38px] h-[38px] items-center justify-center">
-              <AdminNotificationIcon
-                color={isDark ? "#FFFFFF" : "#2D264B"}
-                dotColor="#03EA89"
-              />
-            </TouchableOpacity>
-          </View>
-
           <TouchableOpacity
             onPress={() => setOpenTierDropdown(!openTierDropdown)}
-            className="mt-12 relative"
+            className="relative"
           >
             <View
               style={{ borderColor: "#B2B2B2", borderRadius: 5 }}
@@ -244,19 +247,13 @@ export default function AdminPricingOptionScreen() {
         </View>
 
         <View className="mt-auto mb-[42px]">
-          <TouchableOpacity
-            disabled={loadingPricingOptionData}
+          <CustomButton
+            primary
+            title={loadingPricingOptionData ? "Updating..." : "Update"}
             onPress={handleUpdatePricingOptions}
-          >
-            <ThemedText
-              darkColor="#FFFFFF"
-              lightColor="#000000"
-              style={{ fontFamily: "Poppins_500Medium" }}
-              className="text-center py-5 text-[15px] bg-[#00FF94]"
-            >
-              {loadingPricingOptionData ? "Updating...." : "Update"}
-            </ThemedText>
-          </TouchableOpacity>
+            loading={loadingPricingOptionData}
+            disabled={loadingPricingOptionData}
+          />
         </View>
       </View>
     </View>

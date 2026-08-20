@@ -105,6 +105,22 @@ function AdminAppNavigator() {
       />
 
       <Stack.Screen
+        name="ledger"
+        options={{
+          title: "Ledger",
+          headerShown: false,
+        }}
+      />
+
+      <Stack.Screen
+        name="wallet-transactions"
+        options={{
+          title: "Wallet Transactions",
+          headerShown: false,
+        }}
+      />
+
+      <Stack.Screen
         name="onboarding"
         options={{
           title: "Verify Account",

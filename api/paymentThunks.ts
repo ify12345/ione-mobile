@@ -11,6 +11,8 @@ import {
   WalletTransaction,
   BankAccountResponse,
   GetBanksResponse,
+  LedgerPagination,
+  TransactionLedgerResponse,
 } from "@/components/typings/payment";
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
@@ -160,18 +162,26 @@ export const getMyWalletBalance = createAsyncThunk<
 });
 
 export const getWalletTransactions = createAsyncThunk<
-  { data: WalletTransaction[]; pagination: object },
-  { page?: number; limit?: number },
+  { data: WalletTransaction[]; pagination: LedgerPagination },
+  { page?: number; limit?: number; type?: string },
   AsyncThunkConfig
->("payment/walletTransactions", async ({ page = 1, limit = 10 }, thunkAPI) => {
-  const endpoint = `/i-one/wallet/transactions?page=${page}&limit=${limit}`;
-  logRequest("getWalletTransactions", `GET ${endpoint}`, { page, limit });
-  const result = await apiCall(axiosInstance.get(endpoint), thunkAPI);
-  if (result && !(result as any)?.payload)
-    logResponse("getWalletTransactions", result);
-  else logError("getWalletTransactions", result);
-  return result;
-});
+>(
+  "payment/walletTransactions",
+  async ({ page = 1, limit = 50, type }, thunkAPI) => {
+    const params = `page=${page}&limit=${limit}${type ? `&type=${type}` : ""}`;
+    const endpoint = `/i-one/wallet/transactions?${params}`;
+    logRequest("getWalletTransactions", `GET ${endpoint}`, {
+      page,
+      limit,
+      type,
+    });
+    const result = await apiCall(axiosInstance.get(endpoint), thunkAPI);
+    if (result && !(result as any)?.payload)
+      logResponse("getWalletTransactions", result);
+    else logError("getWalletTransactions", result);
+    return result;
+  },
+);
 
 export const withdrawFunds = createAsyncThunk<
   any,
@@ -290,10 +300,25 @@ export const getBanks = createAsyncThunk<
   void,
   AsyncThunkConfig
 >("payment/banks", async (_, thunkAPI) => {
-  const endpoint = `/i-one/wallet/banks`;
+  const endpoint = `/i-one/banks`;
   logRequest("getBanks", `GET ${endpoint}`);
   const result = await apiCall(axiosInstance.get(endpoint), thunkAPI);
   if (result && !(result as any)?.payload) logResponse("getBanks", result);
   else logError("getBanks", result);
+  return result;
+});
+
+export const getWalletLedger = createAsyncThunk<
+  TransactionLedgerResponse,
+  { page?: number; limit?: number; type?: string },
+  AsyncThunkConfig
+>("payment/walletLedger", async ({ page = 1, limit = 50, type }, thunkAPI) => {
+  const params = `page=${page}&limit=${limit}${type ? `&type=${type}` : ""}`;
+  const endpoint = `/i-one/wallet/ledger?${params}`;
+  logRequest("getWalletLedger", `GET ${endpoint}`, { page, limit, type });
+  const result = await apiCall(axiosInstance.get(endpoint), thunkAPI);
+  if (result && !(result as any)?.payload)
+    logResponse("getWalletLedger", result);
+  else logError("getWalletLedger", result);
   return result;
 });

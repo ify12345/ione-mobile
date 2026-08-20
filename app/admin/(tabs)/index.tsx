@@ -136,7 +136,7 @@ export default function AdminHomeScreen() {
 
   const showAdminEmailVerificationBanner = !user?.emailVerified;
 
-  console.log("dashboardSummary", dashboardSummary);
+  //   console.log("dashboardSummary", dashboardSummary);
   //   console.log("location", location);
   //   console.log("locationDashboard", locationDashboard);
 

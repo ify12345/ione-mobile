@@ -9,6 +9,7 @@ import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { TouchableOpacity, View, Text } from "react-native";
 import { Toast } from "toastify-react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function AdminOpenHoursScreen() {
   const { colorScheme } = useColorScheme();
@@ -80,38 +81,26 @@ export default function AdminOpenHoursScreen() {
     <View style={{ flex: 1, backgroundColor: screenBg }}>
       <Loader visible={loadingOpenHours} />
 
-      <View className="pb-6 pt-16 px-[35px] flex-1">
+      <View className="pb-6 pt-16 px-[20px] flex-1">
         {/* Header */}
         <View
           style={{
             flexDirection: "row",
             alignItems: "center",
-            justifyContent: "space-between",
+            gap: 32,
             marginBottom: 32,
           }}
         >
-          <ThemedText
-            style={{ fontFamily: "Poppins_600SemiBold", fontSize: 22 }}
-            darkColor="#FFFFFF"
-            lightColor="#000000"
-          >
-            Open Hours
-          </ThemedText>
-          <TouchableOpacity
-            style={{
-              backgroundColor: "#00FF943B",
-              borderRadius: 10,
-              width: 38,
-              height: 38,
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <AdminNotificationIcon
-              color={isDark ? "#FFFFFF" : "#2D264B"}
-              dotColor="#03EA89"
+          <TouchableOpacity onPress={() => router.back()}>
+            <Ionicons
+              name="arrow-back"
+              size={22}
+              color={isDark ? "#fff" : "#111"}
             />
           </TouchableOpacity>
+          <ThemedText style={{ fontSize: 17, fontWeight: "700" }}>
+            Bank Accounts
+          </ThemedText>
         </View>
 
         {isLoading ? (

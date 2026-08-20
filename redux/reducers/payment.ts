@@ -15,6 +15,7 @@ import {
   deleteBankAccount,
   defaultBankAccount,
   getBanks,
+  getWalletLedger,
 } from "@/api/paymentThunks";
 import {
   AllMembersPaymentStatus,
@@ -26,6 +27,8 @@ import {
   WithdrawFundsResponse,
   BankAccountResponse,
   Bank,
+  LedgerEntry,
+  LedgerPagination,
 } from "@/components/typings/payment";
 
 interface BankAccountItem {
@@ -48,6 +51,9 @@ interface PaymentState {
   bankAccountData: BankAccountResponse | null;
   bankAccounts: BankAccountItem[];
   banks: Bank[];
+  walletLedger: LedgerEntry[];
+  walletLedgerPagination: LedgerPagination | null;
+  walletTransactionsPagination: LedgerPagination | null;
 
   loadingInit: boolean;
   loadingStatus: boolean;
@@ -59,11 +65,15 @@ interface PaymentState {
   loadingAddBank: boolean;
   loadingDeleteBank: boolean;
   loadingDefaultBank: boolean;
+  loadingWalletTransaction: boolean;
+  loadingWalletLedger: boolean;
 
   errorInit: string | null;
   errorStatus: string | null;
   errorWithdraw: string | null;
   errorBankAccounts: string | null;
+  errorWalletTransaction: string | null;
+  errorWalletLedger: string | null;
 }
 
 const initialState: PaymentState = {
@@ -78,6 +88,9 @@ const initialState: PaymentState = {
   bankAccountData: null,
   bankAccounts: [],
   banks: [],
+  walletLedger: [],
+  walletLedgerPagination: null,
+  walletTransactionsPagination: null,
 
   loadingInit: false,
   loadingStatus: false,
@@ -89,11 +102,15 @@ const initialState: PaymentState = {
   loadingAddBank: false,
   loadingDeleteBank: false,
   loadingDefaultBank: false,
+  loadingWalletTransaction: false,
+  loadingWalletLedger: false,
 
   errorInit: null,
   errorStatus: null,
   errorWithdraw: null,
   errorBankAccounts: null,
+  errorWalletTransaction: null,
+  errorWalletLedger: null,
 };
 
 const paymentSlice = createSlice({
@@ -206,9 +223,18 @@ const paymentSlice = createSlice({
       });
 
     // Wallet transactions
-    builder.addCase(getWalletTransactions.fulfilled, (state, { payload }) => {
-      state.walletTransactions = payload.data ?? [];
-    });
+    builder
+      .addCase(getWalletTransactions.pending, (state) => {
+        state.loadingWalletTransaction = true;
+      })
+      .addCase(getWalletTransactions.fulfilled, (state, { payload }) => {
+        state.loadingWalletTransaction = false;
+        state.walletTransactions = payload.data ?? [];
+        state.walletTransactionsPagination = payload.pagination ?? null;
+      })
+      .addCase(getWalletTransactions.rejected, (state) => {
+        state.loadingWalletTransaction = false;
+      });
 
     // Withdraw funds
     builder
@@ -310,6 +336,23 @@ const paymentSlice = createSlice({
       })
       .addCase(getBanks.rejected, (state) => {
         state.loadingBanks = false;
+      });
+
+    // Wallet ledger
+    builder
+      .addCase(getWalletLedger.pending, (state) => {
+        state.loadingWalletLedger = true;
+        state.errorWalletLedger = null;
+      })
+      .addCase(getWalletLedger.fulfilled, (state, { payload }) => {
+        state.loadingWalletLedger = false;
+        state.walletLedger = payload.entries ?? [];
+        state.walletLedgerPagination = payload.pagination ?? null;
+      })
+      .addCase(getWalletLedger.rejected, (state, action) => {
+        state.loadingWalletLedger = false;
+        state.errorWalletLedger =
+          action.payload?.msg ?? "Failed to fetch ledger";
       });
   },
 });

@@ -2,12 +2,14 @@ import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  FlatList,
   KeyboardAvoidingView,
   Modal,
   Platform,
   Pressable,
   ScrollView,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
   useColorScheme,
@@ -58,6 +60,7 @@ export default function BankAccountScreen() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showBankPicker, setShowBankPicker] = useState(false);
   const [selectedBankName, setSelectedBankName] = useState("");
+  const [bankSearch, setBankSearch] = useState("");
   const formikRef = React.useRef<any>(null);
 
   useEffect(() => {
@@ -72,11 +75,13 @@ export default function BankAccountScreen() {
     }
   }, [showAddModal]);
 
+  useEffect(() => {
+    if (showBankPicker) setBankSearch("");
+  }, [showBankPicker]);
+
   const cardBg = isDark ? "#111" : "#F9FAFB";
   const cardBorder = isDark ? "#222" : "#F0F0F0";
   const mutedColor = isDark ? "#666" : "#999";
-
-  console.log("banks", banks);
 
   const handleAddBank = async (values: {
     bankName: string;
@@ -159,7 +164,7 @@ export default function BankAccountScreen() {
           alignItems: "center",
           paddingHorizontal: 20,
           paddingVertical: 14,
-          gap: 12,
+          gap: 32,
           borderBottomWidth: 1,
           borderBottomColor: cardBorder,
         }}
@@ -178,7 +183,7 @@ export default function BankAccountScreen() {
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         <ScrollView
           showsVerticalScrollIndicator={false}
@@ -541,7 +546,7 @@ export default function BankAccountScreen() {
             style={{
               backgroundColor: isDark ? "#1A1A1A" : "#fff",
               borderRadius: 16,
-              maxHeight: "60%",
+              maxHeight: "70%",
               overflow: "hidden",
             }}
             onPress={() => {}}
@@ -549,23 +554,63 @@ export default function BankAccountScreen() {
             <View
               style={{
                 padding: 16,
+                paddingBottom: 12,
                 borderBottomWidth: 1,
                 borderBottomColor: cardBorder,
               }}
             >
-              <ThemedText style={{ fontSize: 16, fontWeight: "700" }}>
+              <ThemedText
+                style={{ fontSize: 16, fontWeight: "700", marginBottom: 12 }}
+              >
                 Select Bank
               </ThemedText>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  backgroundColor: isDark ? "#222" : "#F5F5F5",
+                  borderRadius: 10,
+                  paddingHorizontal: 12,
+                  height: 42,
+                }}
+              >
+                <Ionicons name="search" size={16} color={mutedColor} />
+                <TextInput
+                  value={bankSearch}
+                  onChangeText={setBankSearch}
+                  placeholder="Search banks..."
+                  placeholderTextColor={mutedColor}
+                  autoFocus
+                  style={{
+                    flex: 1,
+                    fontSize: 14,
+                    color: isDark ? "#fff" : "#111",
+                    marginLeft: 8,
+                  }}
+                />
+                {bankSearch.length > 0 && (
+                  <TouchableOpacity onPress={() => setBankSearch("")}>
+                    <Ionicons
+                      name="close-circle"
+                      size={16}
+                      color={mutedColor}
+                    />
+                  </TouchableOpacity>
+                )}
+              </View>
             </View>
             {loadingBanks ? (
               <View style={{ padding: 40, alignItems: "center" }}>
                 <ActivityIndicator color={accent} size="small" />
               </View>
             ) : (
-              <ScrollView style={{ maxHeight: 400 }}>
-                {banks.map((bank, i) => (
+              <FlatList
+                data={banks.filter((b) =>
+                  b.name.toLowerCase().includes(bankSearch.toLowerCase()),
+                )}
+                keyExtractor={(item) => item._id}
+                renderItem={({ item: bank, index }) => (
                   <TouchableOpacity
-                    key={bank._id}
                     onPress={() => {
                       setSelectedBankName(bank.name);
                       formikRef.current?.setFieldValue("bankName", bank.name);
@@ -575,7 +620,7 @@ export default function BankAccountScreen() {
                     style={{
                       paddingVertical: 14,
                       paddingHorizontal: 16,
-                      borderBottomWidth: i < banks.length - 1 ? 1 : 0,
+                      borderBottomWidth: 1,
                       borderBottomColor: isDark ? "#2a2a2a" : "#f2f2f2",
                       backgroundColor:
                         selectedBankName === bank.name
@@ -594,8 +639,10 @@ export default function BankAccountScreen() {
                       {bank.name}
                     </Text>
                   </TouchableOpacity>
-                ))}
-              </ScrollView>
+                )}
+                style={{ maxHeight: 400 }}
+                keyboardShouldPersistTaps="handled"
+              />
             )}
           </Pressable>
         </Pressable>

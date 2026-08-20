@@ -20,6 +20,8 @@ export default function AdminWalletScreen() {
   const insets = useSafeAreaInsets();
   const dispatch = useAppDispatch();
 
+  const screenBg = isDark ? "#000" : "#FAFAFA";
+
   const { myWalletBalance, loadingMyBalance } = useAppSelector(
     (s) => s.payment,
   );
@@ -32,7 +34,7 @@ export default function AdminWalletScreen() {
   }, [dispatch]);
 
   return (
-    <View style={{ flex: 1, backgroundColor: isDark ? "#000" : "#f5f5f5" }}>
+    <View style={{ flex: 1, backgroundColor: screenBg }}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
@@ -105,6 +107,20 @@ export default function AdminWalletScreen() {
             iconColor="#00C853"
             label="Fund Wallet"
             onPress={() => router.push("/payment-screens/wallet-fund")}
+          />
+
+          <SettingsRow
+            icon="receipt-long"
+            iconColor="#7C4DFF"
+            label="Ledger"
+            onPress={() => router.push("/admin/ledger")}
+          />
+
+          <SettingsRow
+            icon="swap-horiz"
+            iconColor="#009688"
+            label="Transactions"
+            onPress={() => router.push("/admin/wallet-transactions")}
           />
         </SettingsSection>
       </ScrollView>
