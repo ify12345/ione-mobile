@@ -17,6 +17,9 @@ import {
   VisitorResponse,
   SessionByIdResponse,
   UpdateOpenHoursResponse,
+  BillingPagination,
+  PaymentHistoryResponse,
+  SessionPaymentDetailsResponse,
 } from "@/components/typings/apiResponse";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import apiCall from "./apiCall";
@@ -194,4 +197,30 @@ export const updateOpenHours = createAsyncThunk<
     axiosInstance.patch(`/i-one/location/${locationId}/opening-hours`, payload),
     thunkAPI,
   );
+});
+
+// billing location
+
+export const getLocationTransactions = createAsyncThunk<
+  { data: PaymentHistoryResponse; pagination: BillingPagination },
+  { locationId: string; page?: number; limit?: number; type?: string },
+  AsyncThunkConfig
+>(
+  "billing/LocationTransactions",
+  async ({ locationId, page = 1, limit = 10, type }, thunkAPI) => {
+    const params = `page=${page}&limit=${limit}${type ? `&type=${type}` : ""}`;
+    const endpoint = `/i-one/billing/location/${locationId}/transactions?${params}`;
+    const result = await apiCall(axiosInstance.get(endpoint), thunkAPI);
+    return result;
+  },
+);
+
+export const getLocationTeamStatus = createAsyncThunk<
+  SessionPaymentDetailsResponse,
+  { locationId: string; sessionId: string },
+  AsyncThunkConfig
+>("billing/LocationTeamStatus", async ({ locationId, sessionId }, thunkAPI) => {
+  const endpoint = `/i-one/billing/location/${locationId}/sessions/${sessionId}/team-status`;
+  const result = await apiCall(axiosInstance.get(endpoint), thunkAPI);
+  return result;
 });

@@ -14,6 +14,8 @@ import {
   getSessionByDate,
   getSessionById,
   updateOpenHours,
+  getLocationTeamStatus,
+  getLocationTransactions,
 } from "@/api/ownerDashboardThunk";
 import {
   ChangePasswordResponse,
@@ -31,6 +33,9 @@ import {
   SessionByDateResponse,
   SessionByIdResponse,
   UpdateOpenHoursResponse,
+  PaymentHistoryResponse,
+  SessionPaymentDetailsResponse,
+  BillingPagination,
 } from "@/components/typings/apiResponse";
 import { createSlice } from "@reduxjs/toolkit";
 
@@ -51,6 +56,9 @@ interface State {
   sessionByDate: SessionByDateResponse[];
   sessionById: SessionByIdResponse | null;
   openingHours: UpdateOpenHoursResponse | null;
+  locationTransactions: PaymentHistoryResponse | null;
+  locationTeamStatus: SessionPaymentDetailsResponse | null;
+  billingPagination: BillingPagination | null;
 
   loadingLocationDashboard: boolean;
   loadingLocation: boolean;
@@ -67,6 +75,8 @@ interface State {
   loadingSessionByDate: boolean;
   loadingSessionById: boolean;
   loadingOpenHours: boolean;
+  loadingLocationTransactions: boolean;
+  loadingLocationTeamStatus: boolean;
 
   errorLocationDashboard: string | null;
   errorLocation: string | null;
@@ -83,6 +93,8 @@ interface State {
   errorSessionByDate: string | null;
   errorSessionById: string | null;
   errorOpeningHours: string | null;
+  errorLocationTransactions: string | null;
+  errorLocationTeamStatus: string | null;
 }
 
 const initialState: State = {
@@ -102,6 +114,9 @@ const initialState: State = {
   sessionByDate: [],
   sessionById: null,
   openingHours: null,
+  locationTransactions: null,
+  locationTeamStatus: null,
+  billingPagination: null,
 
   loadingLocationDashboard: false,
   loadingLocation: false,
@@ -118,6 +133,8 @@ const initialState: State = {
   loadingSessionByDate: false,
   loadingSessionById: false,
   loadingOpenHours: false,
+  loadingLocationTransactions: false,
+  loadingLocationTeamStatus: false,
 
   errorLocationDashboard: null,
   errorLocation: null,
@@ -134,6 +151,8 @@ const initialState: State = {
   errorSessionByDate: null,
   errorSessionById: null,
   errorOpeningHours: null,
+  errorLocationTransactions: null,
+  errorLocationTeamStatus: null,
 };
 
 export const ownerDashboardSlice = createSlice({
@@ -368,6 +387,35 @@ export const ownerDashboardSlice = createSlice({
       state.loadingSessionById = false;
       state.errorSessionById =
         action.error.message || "Failed to get session by id";
+    });
+
+    // get location transactions
+    builder
+      .addCase(getLocationTransactions.pending, (state) => {
+        state.loadingLocationTransactions = true;
+      })
+      .addCase(getLocationTransactions.fulfilled, (state, { payload }) => {
+        state.loadingLocationTransactions = false;
+        state.locationTransactions = payload.data ?? [];
+        state.billingPagination = payload.pagination ?? null;
+      })
+      .addCase(getLocationTransactions.rejected, (state) => {
+        state.loadingLocationTransactions = false;
+      });
+
+    // get location team status
+    builder.addCase(getLocationTeamStatus.pending, (state) => {
+      state.loadingLocationTeamStatus = true;
+      state.errorLocationTeamStatus = null;
+    });
+    builder.addCase(getLocationTeamStatus.fulfilled, (state, { payload }) => {
+      state.locationTeamStatus = payload;
+      state.loadingLocationTeamStatus = false;
+    });
+    builder.addCase(getSessionById.rejected, (state, action) => {
+      state.loadingLocationTeamStatus = false;
+      state.errorLocationTeamStatus =
+        action.error.message || "Failed to get location team status";
     });
   },
 });
