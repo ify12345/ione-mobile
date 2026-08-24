@@ -5,7 +5,6 @@ import {
   getLocationDashboard,
   getRevenue,
   getSummary,
-  getTransactionHistory,
   getUpcomingSessions,
   getUsersChart,
   getVisitorsCount,
@@ -33,7 +32,7 @@ import {
   SessionByDateResponse,
   SessionByIdResponse,
   UpdateOpenHoursResponse,
-  PaymentHistoryResponse,
+  PaymentDateGroup,
   SessionPaymentDetailsResponse,
   BillingPagination,
 } from "@/components/typings/apiResponse";
@@ -56,7 +55,7 @@ interface State {
   sessionByDate: SessionByDateResponse[];
   sessionById: SessionByIdResponse | null;
   openingHours: UpdateOpenHoursResponse | null;
-  locationTransactions: PaymentHistoryResponse | null;
+  locationTransactions: PaymentDateGroup[];
   locationTeamStatus: SessionPaymentDetailsResponse | null;
   billingPagination: BillingPagination | null;
 
@@ -114,7 +113,7 @@ const initialState: State = {
   sessionByDate: [],
   sessionById: null,
   openingHours: null,
-  locationTransactions: null,
+  locationTransactions: [],
   locationTeamStatus: null,
   billingPagination: null,
 
@@ -329,21 +328,6 @@ export const ownerDashboardSlice = createSlice({
         action.error.message || "Failed to change password";
     });
 
-    // get transaction history
-    builder.addCase(getTransactionHistory.pending, (state) => {
-      state.loadingTransactionHistory = true;
-      state.errorTransactionHistory = null;
-    });
-    builder.addCase(getTransactionHistory.fulfilled, (state, { payload }) => {
-      state.transactionHistory = payload.data;
-      state.loadingTransactionHistory = false;
-    });
-    builder.addCase(getTransactionHistory.rejected, (state, action) => {
-      state.loadingTransactionHistory = false;
-      state.errorTransactionHistory =
-        action.error.message || "Failed to get transaction history";
-    });
-
     // update pricing options
     builder.addCase(updatePricingOptions.pending, (state) => {
       state.loadingPricingOptionData = true;
@@ -399,8 +383,10 @@ export const ownerDashboardSlice = createSlice({
         state.locationTransactions = payload.data ?? [];
         state.billingPagination = payload.pagination ?? null;
       })
-      .addCase(getLocationTransactions.rejected, (state) => {
+      .addCase(getLocationTransactions.rejected, (state, action) => {
         state.loadingLocationTransactions = false;
+        state.errorLocationTransactions =
+          action.error.message || "Failed to get location transactions";
       });
 
     // get location team status
@@ -412,7 +398,7 @@ export const ownerDashboardSlice = createSlice({
       state.locationTeamStatus = payload;
       state.loadingLocationTeamStatus = false;
     });
-    builder.addCase(getSessionById.rejected, (state, action) => {
+    builder.addCase(getLocationTeamStatus.rejected, (state, action) => {
       state.loadingLocationTeamStatus = false;
       state.errorLocationTeamStatus =
         action.error.message || "Failed to get location team status";

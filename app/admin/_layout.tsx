@@ -74,6 +74,14 @@ function AdminAppNavigator() {
       />
 
       <Stack.Screen
+        name="team-status"
+        options={{
+          title: "Team Status",
+          headerShown: false,
+        }}
+      />
+
+      <Stack.Screen
         name="notification"
         options={{
           title: "Notifications",

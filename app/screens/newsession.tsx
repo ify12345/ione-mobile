@@ -90,7 +90,7 @@ export default function NewSession() {
           winningDecider: values.winningDecider,
         },
       };
-      console.log(payload);
+      console.log("testing timeout", payload);
       setLoading(true);
       dispatch(createSession(payload))
         .unwrap()
@@ -244,12 +244,7 @@ export default function NewSession() {
             >
               You are officially the captain of this ball session!
             </ThemedText>
-            <ThemedText
-              darkColor={theme.text}
-              className="text-[11px] text-[#0C4D2E]"
-            >
-              You have [timer] before your Session is cancelled
-            </ThemedText>
+
             <ThemedText
               darkColor={theme.text}
               className="text-[11px] text-[#0C4D2E]"

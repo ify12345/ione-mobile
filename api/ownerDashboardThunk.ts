@@ -17,7 +17,6 @@ import {
   VisitorResponse,
   SessionByIdResponse,
   UpdateOpenHoursResponse,
-  BillingPagination,
   PaymentHistoryResponse,
   SessionPaymentDetailsResponse,
 } from "@/components/typings/apiResponse";
@@ -160,19 +159,19 @@ export const changePassword = createAsyncThunk<
   );
 });
 
-export const getTransactionHistory = createAsyncThunk<
-  TransactionHistoryResponse,
-  string,
+export const getLocationTransactions = createAsyncThunk<
+  PaymentHistoryResponse,
+  { locationId: string; page?: number; limit?: number; type?: string },
   AsyncThunkConfig
->("/location/transactions", async (locationId, thunkAPI) => {
-  return apiCall(
-    axiosInstance.get(
-      `/i-one/billing/location/${locationId}/transactions`,
-      thunkAPI,
-    ),
-    thunkAPI,
-  );
-});
+>(
+  "billing/LocationTransactions",
+  async ({ locationId, page = 1, limit = 10, type }, thunkAPI) => {
+    const params = `page=${page}&limit=${limit}${type ? `&type=${type}` : ""}`;
+    const endpoint = `/i-one/billing/location/${locationId}/transactions?${params}`;
+    const result = await apiCall(axiosInstance.get(endpoint), thunkAPI);
+    return result;
+  },
+);
 
 export const updatePricingOptions = createAsyncThunk<
   UpdatePricingOptionsResponse,
@@ -200,20 +199,6 @@ export const updateOpenHours = createAsyncThunk<
 });
 
 // billing location
-
-export const getLocationTransactions = createAsyncThunk<
-  { data: PaymentHistoryResponse; pagination: BillingPagination },
-  { locationId: string; page?: number; limit?: number; type?: string },
-  AsyncThunkConfig
->(
-  "billing/LocationTransactions",
-  async ({ locationId, page = 1, limit = 10, type }, thunkAPI) => {
-    const params = `page=${page}&limit=${limit}${type ? `&type=${type}` : ""}`;
-    const endpoint = `/i-one/billing/location/${locationId}/transactions?${params}`;
-    const result = await apiCall(axiosInstance.get(endpoint), thunkAPI);
-    return result;
-  },
-);
 
 export const getLocationTeamStatus = createAsyncThunk<
   SessionPaymentDetailsResponse,
