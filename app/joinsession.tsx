@@ -4,7 +4,6 @@ import {
   joinSession,
   leaveSession,
 } from "@/api/sessions";
-import BackIcon from "@/assets/svg/BackIcon";
 import OpenIcon from "@/assets/svg/OpenIcon";
 import PitchIcon from "@/assets/svg/PitchSvg";
 import pitch from "@/assets/images/greenpitch.png";
@@ -27,6 +26,7 @@ import {
   useColorScheme,
   View,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { Toast } from "toastify-react-native";
 import PlayerInfoCard from "./playerinfocard";
 
@@ -122,6 +122,7 @@ function buildFormationPositions(
 
 export default function JoinSession() {
   const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
   const theme = Colors[colorScheme ?? "light"];
   const [showDetails, setShowDetails] = useState(false);
   const [activeView, setActiveView] = useState<"squad" | "lineups">("squad");
@@ -306,8 +307,6 @@ export default function JoinSession() {
     );
   }
 
-  console.log(session);
-
   return (
     <SafeAreaScreen>
       <ScrollView
@@ -316,7 +315,7 @@ export default function JoinSession() {
         contentContainerStyle={{ paddingBottom: 40, flexGrow: 1 }}
       >
         <View className="flex flex-col gap-[31px]">
-          <View className="mx-[32px] flex flex-col gap-[31px]">
+          <View className="mx-[24px] flex flex-col gap-[31px]">
             {/* Session status bar + live indicator */}
             <View className="w-full rounded-[10px] border-[1px] border-[#43B75D] bg-[#ECF8EF] p-[16px]">
               <View className="flex flex-col gap-[4px]">
@@ -361,7 +360,11 @@ export default function JoinSession() {
             <View>
               <View className="flex flex-row items-center justify-between">
                 <TouchableOpacity onPress={() => router.back()}>
-                  <BackIcon />
+                  <Ionicons
+                    name="arrow-back"
+                    size={22}
+                    color={isDark ? "#fff" : "#111"}
+                  />
                 </TouchableOpacity>
 
                 <ThemedText
@@ -438,7 +441,7 @@ export default function JoinSession() {
                       }
                     >
                       <Text className="text-[10px] font-[400] text-black">
-                        Assign Sets
+                        View Sets
                       </Text>
                     </TouchableOpacity>
 
@@ -574,6 +577,7 @@ export default function JoinSession() {
                   <TouchableOpacity
                     key={view}
                     onPress={() => setActiveView(view)}
+                    className="relative"
                   >
                     <ThemedText
                       lightColor={isActive ? "#00CC77" : theme.text}
@@ -581,13 +585,13 @@ export default function JoinSession() {
                       style={{
                         fontSize: 15,
                         fontWeight: isActive ? "700" : "500",
-                        borderBottomWidth: isActive ? 2 : 0,
-                        borderBottomColor: "#00FF94",
-                        paddingBottom: 2,
                       }}
                     >
                       {label}
                     </ThemedText>
+                    {isActive && (
+                      <View className="absolute bottom-[-25px] h-[2px] w-full bg-[#00FF94]" />
+                    )}
                   </TouchableOpacity>
                 );
               })}

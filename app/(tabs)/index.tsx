@@ -64,7 +64,7 @@ export default function HomeScreen() {
   return (
     <SafeAreaScreen className="flex-1">
       {/* ── FIXED TOP SECTION ── */}
-      <View style={{ paddingHorizontal: 35, paddingTop: 8, gap: 18 }}>
+      <View style={{ paddingHorizontal: 24, paddingTop: 8, gap: 18 }}>
         {/* Header */}
         <View
           style={{
@@ -148,6 +148,7 @@ export default function HomeScreen() {
             style={{
               flexDirection: "row",
               justifyContent: "space-between",
+              width: "100%",
               alignItems: "center",
             }}
           >
@@ -193,7 +194,7 @@ export default function HomeScreen() {
       </View>
 
       {/* ── SCROLLABLE FIXTURES SECTION ── */}
-      <View style={{ flex: 1, paddingHorizontal: 35, paddingTop: 20 }}>
+      <View style={{ flex: 1, paddingHorizontal: 24, paddingTop: 20 }}>
         {/* Section header — stays fixed above the list */}
         <View
           style={{

@@ -16,30 +16,6 @@ export function FixtureCard({
 }: FixtureCardProps) {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
-  const session = sessionData ?? match.sessionData;
-
-  const handlePress = () => {
-    // if (!match.sessionId) return;
-    // if (
-    //   match.paymentRequired &&
-    //   match.isFull &&
-    //   !match.allPaymentsCompleted &&
-    //   !match.inProgress &&
-    //   !match.finished
-    // ) {
-    router.push({
-      pathname: "/admin/team-status",
-      params: {
-        sessionId: match.sessionId,
-        locationId: match.locationId,
-      },
-    });
-
-    // router.push({
-    //   pathname: "/joinsession",
-    //   params: { sessionId: match.sessionId, session: JSON.stringify(session) },
-    // });
-  };
 
   const playerCount = match.playerCount ?? 0;
   const maxPlayers = match.maxPlayers ?? 0;
@@ -90,43 +66,6 @@ export function FixtureCard({
     };
   })();
 
-  const actionLabel = (() => {
-    if (isFinished) {
-      return "View Summary";
-    }
-
-    if (isLive) {
-      return "Manage";
-    }
-
-    if (match.paymentRequired && match.isFull && !match.allPaymentsCompleted) {
-      return "View Payments";
-    }
-
-    return "Manage Fixture";
-  })();
-
-  const actionStyle = (() => {
-    if (actionLabel === "View Summary") {
-      return {
-        bg: isDark ? "#0D2B1F" : "#E8FFF4",
-        color: "#00CC77",
-      };
-    }
-
-    if (actionLabel === "View Payments") {
-      return {
-        bg: "#FFB800",
-        color: "#000",
-      };
-    }
-
-    return {
-      bg: "#00FF94",
-      color: "#000",
-    };
-  })();
-
   const fillBarColor =
     fillPct >= 1
       ? isPaymentStage
@@ -150,10 +89,34 @@ export function FixtureCard({
     return `${spotsLeft} spot${spotsLeft !== 1 ? "s" : ""} remaining`;
   })();
 
+  const handleActionPress = () => {
+    if (!match.sessionId) return;
+
+    router.push({
+      pathname: "/admin/team-status",
+      params: {
+        sessionId: match.sessionId,
+        locationId: match.locationId,
+      },
+    });
+  };
+
+  const handleViewSets = () => {
+    if (!match.sessionId) return;
+
+    router.push({
+      pathname: "/view-assigned-set",
+      params: {
+        sessionId: match.sessionId,
+      },
+    });
+  };
+
+  console.log(match.sessionId, "sessionID");
+  console.log(locationId, "locationID");
+
   return (
-    <TouchableOpacity
-      activeOpacity={0.82}
-      onPress={handlePress}
+    <View
       style={{
         marginBottom: 12,
         borderRadius: 16,
@@ -368,9 +331,6 @@ export function FixtureCard({
       {/* Footer */}
       <View
         style={{
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
           borderTopWidth: 1,
           borderTopColor: divider,
           marginTop: 14,
@@ -378,31 +338,59 @@ export function FixtureCard({
           paddingVertical: 12,
         }}
       >
-        <Text
-          style={{ fontSize: 11, color: mutedText, flex: 1, marginRight: 10 }}
-        >
+        <Text style={{ fontSize: 11, color: mutedText, marginBottom: 10 }}>
           {footerNote}
         </Text>
 
-        <View
-          style={{
-            borderRadius: 10,
-            paddingHorizontal: 18,
-            paddingVertical: 9,
-            backgroundColor: actionStyle.bg,
-          }}
-        >
-          <Text
-            style={{
-              fontSize: 12,
-              fontWeight: "800",
-              color: actionStyle.color,
-            }}
-          >
-            {actionLabel}
-          </Text>
-        </View>
+        {match.paymentRequired && isFull && (
+          <View style={{ flexDirection: "row" }}>
+            <TouchableOpacity
+              onPress={handleActionPress}
+              activeOpacity={0.85}
+              style={{
+                flex: 1,
+                borderRadius: 10,
+                paddingVertical: 10,
+                backgroundColor: "#FFB800",
+                alignItems: "center",
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 12,
+                  fontWeight: "800",
+                  color: "#000",
+                }}
+              >
+                View Payments
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={handleViewSets}
+              activeOpacity={0.85}
+              style={{
+                flex: 1,
+                marginLeft: 8,
+                borderRadius: 10,
+                paddingVertical: 10,
+                backgroundColor: "#00FF94",
+                alignItems: "center",
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 12,
+                  fontWeight: "800",
+                  color: "#000",
+                }}
+              >
+                View Assigned Sets
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
-    </TouchableOpacity>
+    </View>
   );
 }

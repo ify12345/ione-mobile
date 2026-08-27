@@ -9,6 +9,7 @@ import {
   AllSessionsResponse,
   SessionByDateResponse,
   SessionByIdResponse,
+  SessionSet,
 } from "@/components/typings/apiResponse";
 import axiosInstance from "./axios";
 
@@ -178,9 +179,27 @@ export const createSets = createAsyncThunk<
 );
 
 export const getSessionSets = createAsyncThunk<
-  any[],
+  SessionSet[],
   { sessionId: string },
   AsyncThunkConfig
 >("/getSessionSets", async ({ sessionId }, thunkAPI) =>
   apiCall(axiosInstance.get(`/i-one/sets/${sessionId}`), thunkAPI),
 );
+
+// export const getSessionSets = createAsyncThunk<
+//   SessionSet[],
+//   { sessionId: string },
+//   AsyncThunkConfig
+// >("/getSessionSets", async ({ sessionId }, thunkAPI) => {
+//   try {
+//     const response = await axiosInstance.get(`/i-one/sets/${sessionId}`);
+
+//     console.log("AXIOS FULL RESPONSE:", JSON.stringify(response.data, null, 2));
+
+//     return response.data;
+//   } catch (error: any) {
+//     return thunkAPI.rejectWithValue(
+//       error?.response?.data ?? "Failed to fetch sets",
+//     );
+//   }
+// });

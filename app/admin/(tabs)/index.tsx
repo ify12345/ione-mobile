@@ -149,7 +149,7 @@ export default function AdminHomeScreen() {
         <SafeAreaView edges={["top"]}>
           <StatusBar style="light" />
           <View
-            style={{ paddingHorizontal: 35, paddingTop: 16, paddingBottom: 24 }}
+            style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 24 }}
           >
             {/* Top bar: condition pill + action buttons */}
             <View
@@ -280,7 +280,7 @@ export default function AdminHomeScreen() {
       >
         <ScrollView
           contentContainerStyle={{
-            paddingHorizontal: 35,
+            paddingHorizontal: 20,
             paddingTop: 20,
             paddingBottom: 100,
           }}
@@ -296,54 +296,6 @@ export default function AdminHomeScreen() {
               onPress={() => router.push("/verify-email")}
             />
           )}
-          {/* {showOnboardingBanner && (
-            <TouchableOpacity
-              onPress={() => router.push("/admin/onboarding")}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 12,
-                backgroundColor: isDark ? "#0D2B1F" : "#EDFFF8",
-                borderRadius: 12,
-                padding: 16,
-                marginBottom: 20,
-                borderWidth: 1,
-                borderColor: isDark ? "#1a3d2b" : "#c8f5e2",
-              }}
-            >
-              <View
-                style={{
-                  width: 38,
-                  height: 38,
-                  borderRadius: 19,
-                  backgroundColor: `${accent}22`,
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Ionicons
-                  name="shield-checkmark-outline"
-                  size={20}
-                  color={accent}
-                />
-              </View>
-              <View style={{ flex: 1 }}>
-                <ThemedText
-                  style={{ fontSize: 13, fontWeight: "600", marginBottom: 2 }}
-                >
-                  Complete Your Onboarding
-                </ThemedText>
-                <ThemedText
-                  lightColor="#666"
-                  darkColor="#aaa"
-                  style={{ fontSize: 11 }}
-                >
-                  Verify your identity to start accepting bookings
-                </ThemedText>
-              </View>
-              <Ionicons name="chevron-forward" size={18} color={accent} />
-            </TouchableOpacity>
-          )} */}
 
           {verification?.status === "PENDING" ? (
             <TouchableOpacity
