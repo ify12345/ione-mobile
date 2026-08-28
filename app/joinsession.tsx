@@ -1,5 +1,6 @@
 import {
   allSessions,
+  endSession,
   getSession,
   joinSession,
   leaveSession,
@@ -29,6 +30,8 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { Toast } from "toastify-react-native";
 import PlayerInfoCard from "./playerinfocard";
+import { formatTime } from "@/utils/formatTime";
+import CustomButton from "@/components/ui/CustomButton";
 
 function buildFormationPositions(
   count: number,
@@ -139,8 +142,13 @@ export default function JoinSession() {
   const sessionId: string = params.sessionId ?? staticSession?._id ?? "";
 
   const { user } = useAppSelector((state) => state.auth);
-  const { activeSession, loadingActiveSession, loadingJoin, loadingLeave } =
-    useAppSelector((state) => state.sessions);
+  const {
+    activeSession,
+    loadingActiveSession,
+    loadingJoin,
+    loadingLeave,
+    loadingAction,
+  } = useAppSelector((state) => state.sessions);
 
   // Fetch fresh session data from server on mount
   useEffect(() => {
@@ -225,6 +233,27 @@ export default function JoinSession() {
       });
   };
 
+  const handleEndSession = () => {
+    if (!sessionId) return;
+    dispatch(endSession(sessionId))
+      .unwrap()
+      .then((response) => {
+        Toast.show({
+          type: "success",
+          text1: "Session ended",
+          text2: response.message,
+        });
+        dispatch(getSession(sessionId));
+        if (user?.location?.coordinates) {
+          const [lat, lng] = user.location.coordinates;
+          dispatch(allSessions({ lat, lng }));
+        }
+      })
+      .catch((err) => {
+        Toast.show({ type: "error", text1: "Error", text2: err?.msg });
+      });
+  };
+
   // Helper formatters
   const formatDate = (dateString?: string) => {
     if (!dateString) return "Date TBD";
@@ -232,15 +261,6 @@ export default function JoinSession() {
       weekday: "short",
       month: "short",
       day: "numeric",
-    });
-  };
-
-  const formatTime = (dateString?: string) => {
-    if (!dateString) return "Time TBD";
-    return new Date(dateString).toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
     });
   };
 
@@ -440,17 +460,17 @@ export default function JoinSession() {
                         })
                       }
                     >
-                      <Text className="text-[10px] font-[400] text-black">
+                      <Text className="text-[10px] font-[400] text-white">
                         View Sets
                       </Text>
                     </TouchableOpacity>
 
                     {/* Reschedule — only the session captain, before match starts/ends */}
-                    {session?.captain?._id === user?.id &&
+                    {session?.captain === user?._id &&
                       !session?.inProgress &&
                       !session?.finished && (
                         <TouchableOpacity
-                          className="flex w-[120px] items-center justify-center rounded-[5px] bg-black p-[10px]"
+                          className="flex w-[120px] items-center justify-center rounded-[5px] bg-primary p-[10px]"
                           onPress={() =>
                             router.push({
                               pathname: "/reschedule-session",
@@ -461,9 +481,28 @@ export default function JoinSession() {
                             })
                           }
                         >
-                          <Text className="text-[10px] font-[400] text-primary">
+                          <Text className="text-[10px] font-[400] text-white">
                             Reschedule
                           </Text>
+                        </TouchableOpacity>
+                      )}
+
+                    {/* End match — only the session captain, while match is live */}
+                    {session?.captain === user?._id &&
+                      session?.inProgress &&
+                      !session?.finished && (
+                        <TouchableOpacity
+                          className="flex w-[120px] items-center justify-center rounded-[5px] bg-red-500 p-[10px]"
+                          onPress={handleEndSession}
+                          disabled={loadingAction}
+                        >
+                          {loadingAction ? (
+                            <ActivityIndicator size="small" color="#fff" />
+                          ) : (
+                            <Text className="text-[10px] font-[400] text-white">
+                              End Session
+                            </Text>
+                          )}
                         </TouchableOpacity>
                       )}
 

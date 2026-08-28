@@ -31,14 +31,15 @@ export default function HomeScreen() {
   useEffect(() => {
     if (!user?.location?.coordinates) return;
     const [lat, lng] = user.location.coordinates;
-    // dispatch(nearBy({ lat, lng }));
-    dispatch(
-      nearBy({
-        lat: 4.094,
-        lng: 6.41222,
-      }),
-    );
-    dispatch(nearByLocation({ lat: 6.45306, lng: 3.42158 }));
+    dispatch(nearBy({ lat, lng }));
+    // dispatch(
+    //   nearBy({
+    //     lat: 4.094,
+    //     lng: 6.41222,
+    //   }),
+    // );
+    dispatch(nearByLocation({ lat, lng }));
+    // dispatch(nearByLocation({ lat: 6.45306, lng: 3.42158 }));
   }, [dispatch, user]);
 
   // lng=6.41222&lat=4.094

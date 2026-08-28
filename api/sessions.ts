@@ -185,21 +185,3 @@ export const getSessionSets = createAsyncThunk<
 >("/getSessionSets", async ({ sessionId }, thunkAPI) =>
   apiCall(axiosInstance.get(`/i-one/sets/${sessionId}`), thunkAPI),
 );
-
-// export const getSessionSets = createAsyncThunk<
-//   SessionSet[],
-//   { sessionId: string },
-//   AsyncThunkConfig
-// >("/getSessionSets", async ({ sessionId }, thunkAPI) => {
-//   try {
-//     const response = await axiosInstance.get(`/i-one/sets/${sessionId}`);
-
-//     console.log("AXIOS FULL RESPONSE:", JSON.stringify(response.data, null, 2));
-
-//     return response.data;
-//   } catch (error: any) {
-//     return thunkAPI.rejectWithValue(
-//       error?.response?.data ?? "Failed to fetch sets",
-//     );
-//   }
-// });

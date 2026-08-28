@@ -2,6 +2,7 @@ import React from "react";
 import { Text, TouchableOpacity, View, useColorScheme } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
+import CustomButton from "@/components/ui/CustomButton";
 
 interface FixtureCardProps {
   match: any;
@@ -9,11 +10,7 @@ interface FixtureCardProps {
   locationId?: string | null;
 }
 
-export function FixtureCard({
-  match,
-  sessionData,
-  locationId,
-}: FixtureCardProps) {
+export function FixtureCard({ match }: FixtureCardProps) {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
 
@@ -90,7 +87,7 @@ export function FixtureCard({
   })();
 
   const handleActionPress = () => {
-    if (!match.sessionId) return;
+    if (!match.sessionId || !match.locationId) return;
 
     router.push({
       pathname: "/admin/team-status",
@@ -111,9 +108,6 @@ export function FixtureCard({
       },
     });
   };
-
-  console.log(match.sessionId, "sessionID");
-  console.log(locationId, "locationID");
 
   return (
     <View
@@ -343,51 +337,20 @@ export function FixtureCard({
         </Text>
 
         {match.paymentRequired && isFull && (
-          <View style={{ flexDirection: "row" }}>
-            <TouchableOpacity
+          <View style={{ flexDirection: "row", gap: 8 }}>
+            <CustomButton
+              style={{ flex: 1 }}
               onPress={handleActionPress}
-              activeOpacity={0.85}
-              style={{
-                flex: 1,
-                borderRadius: 10,
-                paddingVertical: 10,
-                backgroundColor: "#FFB800",
-                alignItems: "center",
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 12,
-                  fontWeight: "800",
-                  color: "#000",
-                }}
-              >
-                View Payments
-              </Text>
-            </TouchableOpacity>
+              primary
+              title="View Payments"
+            />
 
-            <TouchableOpacity
+            <CustomButton
+              style={{ flex: 1 }}
               onPress={handleViewSets}
-              activeOpacity={0.85}
-              style={{
-                flex: 1,
-                marginLeft: 8,
-                borderRadius: 10,
-                paddingVertical: 10,
-                backgroundColor: "#00FF94",
-                alignItems: "center",
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 12,
-                  fontWeight: "800",
-                  color: "#000",
-                }}
-              >
-                View Assigned Sets
-              </Text>
-            </TouchableOpacity>
+              primary
+              title="View Sets"
+            />
           </View>
         )}
       </View>

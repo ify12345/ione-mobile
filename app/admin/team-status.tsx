@@ -186,7 +186,7 @@ export default function TeamStatus() {
       {/* Header */}
       <View className="flex-row items-center gap-[32px] px-[20px] pb-[12px] pt-[40px]">
         <TouchableOpacity onPress={() => router.back()} className="p-[4px]">
-          <Ionicons name="arrow-back" size={22} color="#00A85A" />
+          <Ionicons name="arrow-back" size={22} />
         </TouchableOpacity>
         <ThemedText className="text-[20px] font-[600]">
           Team Payments

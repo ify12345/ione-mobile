@@ -198,8 +198,6 @@ export const updateOpenHours = createAsyncThunk<
   );
 });
 
-// billing location
-
 export const getLocationTeamStatus = createAsyncThunk<
   SessionPaymentDetailsResponse,
   { locationId: string; sessionId: string },
