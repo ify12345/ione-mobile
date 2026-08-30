@@ -5,7 +5,6 @@ import {
   getLocationDashboard,
   getRevenue,
   getSummary,
-  getTransactionHistory,
   getUpcomingSessions,
   getUsersChart,
   getVisitorsCount,
@@ -13,6 +12,9 @@ import {
   updatePricingOptions,
   getSessionByDate,
   getSessionById,
+  updateOpenHours,
+  getLocationTeamStatus,
+  getLocationTransactions,
 } from "@/api/ownerDashboardThunk";
 import {
   ChangePasswordResponse,
@@ -29,6 +31,10 @@ import {
   VisitorResponse,
   SessionByDateResponse,
   SessionByIdResponse,
+  UpdateOpenHoursResponse,
+  PaymentDateGroup,
+  SessionPaymentDetailsResponse,
+  BillingPagination,
 } from "@/components/typings/apiResponse";
 import { createSlice } from "@reduxjs/toolkit";
 
@@ -48,6 +54,10 @@ interface State {
   pricingOptionData: UpdatePricingOptionsResponse | null;
   sessionByDate: SessionByDateResponse[];
   sessionById: SessionByIdResponse | null;
+  openingHours: UpdateOpenHoursResponse | null;
+  locationTransactions: PaymentDateGroup[];
+  locationTeamStatus: SessionPaymentDetailsResponse | null;
+  billingPagination: BillingPagination | null;
 
   loadingLocationDashboard: boolean;
   loadingLocation: boolean;
@@ -63,6 +73,9 @@ interface State {
   loadingPricingOptionData: boolean;
   loadingSessionByDate: boolean;
   loadingSessionById: boolean;
+  loadingOpenHours: boolean;
+  loadingLocationTransactions: boolean;
+  loadingLocationTeamStatus: boolean;
 
   errorLocationDashboard: string | null;
   errorLocation: string | null;
@@ -78,6 +91,9 @@ interface State {
   errorPricingOptionData: string | null;
   errorSessionByDate: string | null;
   errorSessionById: string | null;
+  errorOpeningHours: string | null;
+  errorLocationTransactions: string | null;
+  errorLocationTeamStatus: string | null;
 }
 
 const initialState: State = {
@@ -96,6 +112,10 @@ const initialState: State = {
   pricingOptionData: null,
   sessionByDate: [],
   sessionById: null,
+  openingHours: null,
+  locationTransactions: [],
+  locationTeamStatus: null,
+  billingPagination: null,
 
   loadingLocationDashboard: false,
   loadingLocation: false,
@@ -111,6 +131,9 @@ const initialState: State = {
   loadingPricingOptionData: false,
   loadingSessionByDate: false,
   loadingSessionById: false,
+  loadingOpenHours: false,
+  loadingLocationTransactions: false,
+  loadingLocationTeamStatus: false,
 
   errorLocationDashboard: null,
   errorLocation: null,
@@ -126,6 +149,9 @@ const initialState: State = {
   errorPricingOptionData: null,
   errorSessionByDate: null,
   errorSessionById: null,
+  errorOpeningHours: null,
+  errorLocationTransactions: null,
+  errorLocationTeamStatus: null,
 };
 
 export const ownerDashboardSlice = createSlice({
@@ -272,6 +298,21 @@ export const ownerDashboardSlice = createSlice({
         action.error.message || "Failed to update pitch condition";
     });
 
+    // update opening hours
+    builder.addCase(updateOpenHours.pending, (state) => {
+      state.loadingOpenHours = true;
+      state.errorOpeningHours = null;
+    });
+    builder.addCase(updateOpenHours.fulfilled, (state, { payload }) => {
+      state.openingHours = payload;
+      state.loadingOpenHours = false;
+    });
+    builder.addCase(updateOpenHours.rejected, (state, action) => {
+      state.loadingOpenHours = false;
+      state.errorOpeningHours =
+        action.error.message || "Failed to update Opening Hours";
+    });
+
     // update owner password
     builder.addCase(changePassword.pending, (state) => {
       state.loadingChangePassword = true;
@@ -285,21 +326,6 @@ export const ownerDashboardSlice = createSlice({
       state.loadingChangePassword = false;
       state.errorChangePassword =
         action.error.message || "Failed to change password";
-    });
-
-    // get transaction history
-    builder.addCase(getTransactionHistory.pending, (state) => {
-      state.loadingTransactionHistory = true;
-      state.errorTransactionHistory = null;
-    });
-    builder.addCase(getTransactionHistory.fulfilled, (state, { payload }) => {
-      state.transactionHistory = payload.data;
-      state.loadingTransactionHistory = false;
-    });
-    builder.addCase(getTransactionHistory.rejected, (state, action) => {
-      state.loadingTransactionHistory = false;
-      state.errorTransactionHistory =
-        action.error.message || "Failed to get transaction history";
     });
 
     // update pricing options
@@ -345,6 +371,37 @@ export const ownerDashboardSlice = createSlice({
       state.loadingSessionById = false;
       state.errorSessionById =
         action.error.message || "Failed to get session by id";
+    });
+
+    // get location transactions
+    builder
+      .addCase(getLocationTransactions.pending, (state) => {
+        state.loadingLocationTransactions = true;
+      })
+      .addCase(getLocationTransactions.fulfilled, (state, { payload }) => {
+        state.loadingLocationTransactions = false;
+        state.locationTransactions = payload.data ?? [];
+        state.billingPagination = payload.pagination ?? null;
+      })
+      .addCase(getLocationTransactions.rejected, (state, action) => {
+        state.loadingLocationTransactions = false;
+        state.errorLocationTransactions =
+          action.error.message || "Failed to get location transactions";
+      });
+
+    // get location team status
+    builder.addCase(getLocationTeamStatus.pending, (state) => {
+      state.loadingLocationTeamStatus = true;
+      state.errorLocationTeamStatus = null;
+    });
+    builder.addCase(getLocationTeamStatus.fulfilled, (state, { payload }) => {
+      state.locationTeamStatus = payload;
+      state.loadingLocationTeamStatus = false;
+    });
+    builder.addCase(getLocationTeamStatus.rejected, (state, action) => {
+      state.loadingLocationTeamStatus = false;
+      state.errorLocationTeamStatus =
+        action.error.message || "Failed to get location team status";
     });
   },
 });

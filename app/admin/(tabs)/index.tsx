@@ -5,8 +5,10 @@ import {
   getUpcomingSessions,
   getLocationDashboard,
 } from "@/api/ownerDashboardThunk";
+import { getUser, getVerification } from "@/api/authThunks";
 import AdminNotificationIcon from "@/assets/svg/AdminNotificationIcon";
 import LocationIcon from "@/assets/svg/LocationIcon";
+import ActionBanner from "@/components/ActionBanner";
 import MatchCardSkeleton from "@/components/MatchCardSkeleton";
 import Recent from "@/components/Recent";
 import SafeAreaScreen from "@/components/SafeAreaScreen";
@@ -19,7 +21,14 @@ import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useColorScheme } from "nativewind";
 import React, { useEffect, useState } from "react";
-import { Modal, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import {
+  Modal,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+  AppState,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 type ConditionIconConfig = {
@@ -45,7 +54,9 @@ function PitchConditionIcon({
   size: number;
   color: string;
 }) {
-  const config = CONDITION_ICON[condition ?? ""];
+  const normalizedCondition = condition?.trim().toLowerCase();
+  const config = CONDITION_ICON[normalizedCondition ?? ""];
+
   if (!config)
     return <Ionicons name="help-circle-outline" size={size} color={color} />;
   if (config.library === "MaterialIcons")
@@ -63,7 +74,7 @@ export default function AdminHomeScreen() {
   const [modalVisible, setModalVisible] = useState(false);
 
   const {
-    locationDashboard,
+    // locationDashboard,
     dashboardSummary,
     loadingSummmary,
     location,
@@ -72,6 +83,7 @@ export default function AdminHomeScreen() {
     errorLastMatches,
     loadingLocation,
   } = useAppSelector((state) => state.ownerDashboard);
+  const { user, verification } = useAppSelector((state) => state.auth);
 
   useEffect(() => {
     dispatch(getLocation());
@@ -81,16 +93,46 @@ export default function AdminHomeScreen() {
       dispatch(getLastMatches(location._id));
       dispatch(getUpcomingSessions(location._id));
     }
-  }, [dispatch, location?._id]);
+  }, [dispatch, location?._id, location?.status]);
 
-  const { user } = useAppSelector((state) => state.auth);
+  useEffect(() => {
+    dispatch(getVerification());
+  }, [dispatch]);
+
+  useEffect(() => {
+    const needsRefresh =
+      user?.ownerOnboardingStatus === "PENDING_VERIFICATION" ||
+      verification?.status === "PENDING";
+
+    if (!needsRefresh) return;
+
+    const interval = setInterval(() => {
+      dispatch(getUser());
+      dispatch(getVerification());
+      dispatch(getLocation());
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [dispatch, user?.ownerOnboardingStatus, verification?.status]);
+
+  useEffect(() => {
+    const sub = AppState.addEventListener("change", (state) => {
+      if (state === "active") {
+        dispatch(getUser());
+        dispatch(getVerification());
+        dispatch(getLocation());
+      }
+    });
+
+    return () => sub.remove();
+  }, [dispatch]);
+
   const accent = isDark ? "#00FF94" : "#00cc77";
   const showOnboardingBanner =
     user?.ownerOnboardingStatus === "PENDING_VERIFICATION";
 
-  console.log("dashboardSummary", dashboardSummary);
-  console.log("location", location);
-  console.log("locationDashboard", locationDashboard);
+  const showAdminEmailVerificationBanner = !user?.emailVerified;
+
   return (
     <View style={{ flex: 1, backgroundColor: isDark ? "#000" : "#fff" }}>
       {/* Hero image background */}
@@ -100,7 +142,7 @@ export default function AdminHomeScreen() {
         <SafeAreaView edges={["top"]}>
           <StatusBar style="light" />
           <View
-            style={{ paddingHorizontal: 35, paddingTop: 16, paddingBottom: 24 }}
+            style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 24 }}
           >
             {/* Top bar: condition pill + action buttons */}
             <View
@@ -147,7 +189,10 @@ export default function AdminHomeScreen() {
                   style={{
                     backgroundColor: "rgba(255,255,255,0.2)",
                     borderRadius: 10,
-                    padding: 9,
+                    width: 38,
+                    height: 38,
+                    alignItems: "center",
+                    justifyContent: "center",
                   }}
                 >
                   <AdminNotificationIcon />
@@ -228,25 +273,36 @@ export default function AdminHomeScreen() {
       >
         <ScrollView
           contentContainerStyle={{
-            paddingHorizontal: 35,
+            paddingHorizontal: 20,
             paddingTop: 20,
             paddingBottom: 100,
           }}
           showsVerticalScrollIndicator={false}
         >
-          {showOnboardingBanner && (
+          {showAdminEmailVerificationBanner && (
+            <ActionBanner
+              title="Verify Your Email"
+              description="Verify your email to unlock all app features."
+              icon="mail-outline"
+              accent={accent}
+              isDark={isDark}
+              onPress={() => router.push("/verify-email")}
+            />
+          )}
+
+          {verification?.status === "REJECTED" ? (
             <TouchableOpacity
               onPress={() => router.push("/admin/onboarding")}
               style={{
                 flexDirection: "row",
                 alignItems: "center",
                 gap: 12,
-                backgroundColor: isDark ? "#0D2B1F" : "#EDFFF8",
+                backgroundColor: isDark ? "#2B1212" : "#FDECEC",
                 borderRadius: 12,
                 padding: 16,
                 marginBottom: 20,
                 borderWidth: 1,
-                borderColor: isDark ? "#1a3d2b" : "#c8f5e2",
+                borderColor: isDark ? "#4A1A1A" : "#F5C6C6",
               }}
             >
               <View
@@ -254,33 +310,152 @@ export default function AdminHomeScreen() {
                   width: 38,
                   height: 38,
                   borderRadius: 19,
-                  backgroundColor: `${accent}22`,
+                  backgroundColor: "#EF444422",
                   alignItems: "center",
                   justifyContent: "center",
                 }}
               >
                 <Ionicons
-                  name="shield-checkmark-outline"
+                  name="close-circle-outline"
                   size={20}
-                  color={accent}
+                  color="#EF4444"
                 />
               </View>
+
               <View style={{ flex: 1 }}>
                 <ThemedText
                   style={{ fontSize: 13, fontWeight: "600", marginBottom: 2 }}
                 >
-                  Complete Your Onboarding
+                  Verification Rejected
                 </ThemedText>
+
+                <ThemedText
+                  lightColor="#777"
+                  darkColor="#aaa"
+                  style={{ fontSize: 11, marginBottom: 8 }}
+                >
+                  {verification.rejectionReason ||
+                    "Your documents were rejected. Please resubmit a new verification."}
+                </ThemedText>
+
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 4,
+                  }}
+                >
+                  <Ionicons name="refresh" size={13} color="#EF4444" />
+                  <ThemedText
+                    style={{
+                      fontSize: 12,
+                      fontWeight: "700",
+                      color: "#EF4444",
+                    }}
+                  >
+                    Resubmit Verification
+                  </ThemedText>
+                </View>
+              </View>
+
+              <Ionicons name="chevron-forward" size={18} color="#EF4444" />
+            </TouchableOpacity>
+          ) : verification?.status === "PENDING" ? (
+            <TouchableOpacity
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 12,
+                backgroundColor: isDark ? "#2B230D" : "#FFF9ED",
+                borderRadius: 12,
+                padding: 16,
+                marginBottom: 20,
+                borderWidth: 1,
+                borderColor: isDark ? "#4A3B12" : "#F5D98C",
+              }}
+            >
+              <View
+                style={{
+                  width: 38,
+                  height: 38,
+                  borderRadius: 19,
+                  backgroundColor: "#F59E0B22",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Ionicons name="time-outline" size={20} color="#F59E0B" />
+              </View>
+
+              <View style={{ flex: 1 }}>
+                <ThemedText
+                  style={{ fontSize: 13, fontWeight: "600", marginBottom: 2 }}
+                >
+                  Verification Under Review
+                </ThemedText>
+
                 <ThemedText
                   lightColor="#666"
                   darkColor="#aaa"
                   style={{ fontSize: 11 }}
                 >
-                  Verify your identity to start accepting bookings
+                  Your documents have been submitted and are being reviewed.
+                  We&apos;ll notify you once the review is complete.
                 </ThemedText>
               </View>
-              <Ionicons name="chevron-forward" size={18} color={accent} />
             </TouchableOpacity>
+          ) : (
+            showOnboardingBanner && (
+              <TouchableOpacity
+                onPress={() => router.push("/admin/onboarding")}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 12,
+                  backgroundColor: isDark ? "#0D2B1F" : "#EDFFF8",
+                  borderRadius: 12,
+                  padding: 16,
+                  marginBottom: 20,
+                  borderWidth: 1,
+                  borderColor: isDark ? "#1a3d2b" : "#c8f5e2",
+                }}
+              >
+                <View
+                  style={{
+                    width: 38,
+                    height: 38,
+                    borderRadius: 19,
+                    backgroundColor: `${accent}22`,
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Ionicons
+                    name="shield-checkmark-outline"
+                    size={20}
+                    color={accent}
+                  />
+                </View>
+
+                <View style={{ flex: 1 }}>
+                  <ThemedText
+                    style={{ fontSize: 13, fontWeight: "600", marginBottom: 2 }}
+                  >
+                    Complete Your Onboarding
+                  </ThemedText>
+
+                  <ThemedText
+                    lightColor="#666"
+                    darkColor="#aaa"
+                    style={{ fontSize: 11 }}
+                  >
+                    Verify your identity to start accepting bookings.
+                  </ThemedText>
+                </View>
+
+                <Ionicons name="chevron-forward" size={18} color={accent} />
+              </TouchableOpacity>
+            )
           )}
 
           {/* Section header */}

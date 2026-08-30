@@ -1,12 +1,13 @@
 import {
   allSessions,
+  endSession,
   getSession,
   joinSession,
   leaveSession,
 } from "@/api/sessions";
-import BackIcon from "@/assets/svg/BackIcon";
 import OpenIcon from "@/assets/svg/OpenIcon";
 import PitchIcon from "@/assets/svg/PitchSvg";
+import pitch from "@/assets/images/greenpitch.png";
 import SafeAreaScreen from "@/components/SafeAreaScreen";
 import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/Colors";
@@ -17,20 +18,117 @@ import { router, useLocalSearchParams } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   ScrollView,
+  StyleSheet,
   Text,
   TouchableOpacity,
   useColorScheme,
   View,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { Toast } from "toastify-react-native";
 import PlayerInfoCard from "./playerinfocard";
+import { formatTime } from "@/utils/formatTime";
+import CustomButton from "@/components/ui/CustomButton";
+
+function buildFormationPositions(
+  count: number,
+): { left: number; top: number }[] {
+  if (count <= 0) return [];
+  if (count === 1) return [{ left: 50, top: 85 }];
+  if (count === 2)
+    return [
+      { left: 50, top: 85 },
+      { left: 50, top: 10 },
+    ];
+  if (count === 3)
+    return [
+      { left: 50, top: 85 },
+      { left: 50, top: 45 },
+      { left: 50, top: 10 },
+    ];
+
+  const formations: Record<number, { top: number; cols: number[] }[]> = {
+    4: [
+      { top: 85, cols: [50] },
+      { top: 55, cols: [25, 75] },
+      { top: 10, cols: [50] },
+    ],
+    5: [
+      { top: 85, cols: [50] },
+      { top: 60, cols: [20, 80] },
+      { top: 30, cols: [50] },
+      { top: 8, cols: [50] },
+    ],
+    6: [
+      { top: 85, cols: [50] },
+      { top: 62, cols: [20, 80] },
+      { top: 35, cols: [20, 80] },
+      { top: 8, cols: [50] },
+    ],
+    7: [
+      { top: 85, cols: [50] },
+      { top: 62, cols: [20, 80] },
+      { top: 40, cols: [15, 50, 85] },
+      { top: 12, cols: [50] },
+    ],
+    8: [
+      { top: 85, cols: [50] },
+      { top: 65, cols: [15, 50, 85] },
+      { top: 42, cols: [20, 80] },
+      { top: 20, cols: [20, 80] },
+      { top: 5, cols: [50] },
+    ],
+    9: [
+      { top: 85, cols: [50] },
+      { top: 65, cols: [15, 50, 85] },
+      { top: 45, cols: [20, 80] },
+      { top: 25, cols: [15, 50, 85] },
+      { top: 5, cols: [50] },
+    ],
+    10: [
+      { top: 85, cols: [50] },
+      { top: 66, cols: [15, 38, 62, 85] },
+      { top: 44, cols: [20, 50, 80] },
+      { top: 22, cols: [20, 80] },
+      { top: 5, cols: [50] },
+    ],
+    11: [
+      { top: 85, cols: [50] },
+      { top: 66, cols: [12, 37, 63, 88] },
+      { top: 44, cols: [20, 50, 80] },
+      { top: 22, cols: [15, 50, 85] },
+      { top: 5, cols: [50] },
+    ],
+  };
+
+  const capped = Math.min(count, 11);
+  const tmpl = formations[capped];
+  if (!tmpl)
+    return Array.from({ length: count }, (_, i) => ({
+      left: 50,
+      top: Math.round(10 + (i / (count - 1)) * 75),
+    }));
+
+  const positions: { left: number; top: number }[] = [];
+  for (const row of tmpl) {
+    for (const col of row.cols) {
+      positions.push({ left: col, top: row.top });
+      if (positions.length === count) break;
+    }
+    if (positions.length === count) break;
+  }
+  return positions;
+}
 
 export default function JoinSession() {
   const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
   const theme = Colors[colorScheme ?? "light"];
   const [showDetails, setShowDetails] = useState(false);
+  const [activeView, setActiveView] = useState<"squad" | "lineups">("squad");
   const dispatch = useAppDispatch();
 
   // params only carries the sessionId + static display data (for the initial render skeleton)
@@ -44,8 +142,13 @@ export default function JoinSession() {
   const sessionId: string = params.sessionId ?? staticSession?._id ?? "";
 
   const { user } = useAppSelector((state) => state.auth);
-  const { activeSession, loadingActiveSession, loadingJoin, loadingLeave } =
-    useAppSelector((state) => state.sessions);
+  const {
+    activeSession,
+    loadingActiveSession,
+    loadingJoin,
+    loadingLeave,
+    loadingAction,
+  } = useAppSelector((state) => state.sessions);
 
   // Fetch fresh session data from server on mount
   useEffect(() => {
@@ -130,6 +233,27 @@ export default function JoinSession() {
       });
   };
 
+  const handleEndSession = () => {
+    if (!sessionId) return;
+    dispatch(endSession(sessionId))
+      .unwrap()
+      .then((response) => {
+        Toast.show({
+          type: "success",
+          text1: "Session ended",
+          text2: response.message,
+        });
+        dispatch(getSession(sessionId));
+        if (user?.location?.coordinates) {
+          const [lat, lng] = user.location.coordinates;
+          dispatch(allSessions({ lat, lng }));
+        }
+      })
+      .catch((err) => {
+        Toast.show({ type: "error", text1: "Error", text2: err?.msg });
+      });
+  };
+
   // Helper formatters
   const formatDate = (dateString?: string) => {
     if (!dateString) return "Date TBD";
@@ -137,15 +261,6 @@ export default function JoinSession() {
       weekday: "short",
       month: "short",
       day: "numeric",
-    });
-  };
-
-  const formatTime = (dateString?: string) => {
-    if (!dateString) return "Time TBD";
-    return new Date(dateString).toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
     });
   };
 
@@ -220,7 +335,7 @@ export default function JoinSession() {
         contentContainerStyle={{ paddingBottom: 40, flexGrow: 1 }}
       >
         <View className="flex flex-col gap-[31px]">
-          <View className="mx-[32px] flex flex-col gap-[31px]">
+          <View className="mx-[24px] flex flex-col gap-[31px]">
             {/* Session status bar + live indicator */}
             <View className="w-full rounded-[10px] border-[1px] border-[#43B75D] bg-[#ECF8EF] p-[16px]">
               <View className="flex flex-col gap-[4px]">
@@ -265,7 +380,11 @@ export default function JoinSession() {
             <View>
               <View className="flex flex-row items-center justify-between">
                 <TouchableOpacity onPress={() => router.back()}>
-                  <BackIcon />
+                  <Ionicons
+                    name="arrow-back"
+                    size={22}
+                    color={isDark ? "#fff" : "#111"}
+                  />
                 </TouchableOpacity>
 
                 <ThemedText
@@ -341,10 +460,51 @@ export default function JoinSession() {
                         })
                       }
                     >
-                      <Text className="text-[10px] font-[400] text-black">
-                        Assign Sets
+                      <Text className="text-[10px] font-[400] text-white">
+                        View Sets
                       </Text>
                     </TouchableOpacity>
+
+                    {/* Reschedule — only the session captain, before match starts/ends */}
+                    {session?.captain === user?._id &&
+                      !session?.inProgress &&
+                      !session?.finished && (
+                        <TouchableOpacity
+                          className="flex w-[120px] items-center justify-center rounded-[5px] bg-primary p-[10px]"
+                          onPress={() =>
+                            router.push({
+                              pathname: "/reschedule-session",
+                              params: {
+                                sessionId,
+                                session: JSON.stringify(session),
+                              },
+                            })
+                          }
+                        >
+                          <Text className="text-[10px] font-[400] text-white">
+                            Reschedule
+                          </Text>
+                        </TouchableOpacity>
+                      )}
+
+                    {/* End match — only the session captain, while match is live */}
+                    {session?.captain === user?._id &&
+                      session?.inProgress &&
+                      !session?.finished && (
+                        <TouchableOpacity
+                          className="flex w-[120px] items-center justify-center rounded-[5px] bg-red-500 p-[10px]"
+                          onPress={handleEndSession}
+                          disabled={loadingAction}
+                        >
+                          {loadingAction ? (
+                            <ActivityIndicator size="small" color="#fff" />
+                          ) : (
+                            <Text className="text-[10px] font-[400] text-white">
+                              End Session
+                            </Text>
+                          )}
+                        </TouchableOpacity>
+                      )}
 
                     {/* Pay Fee — only shown when server says payment is required and unpaid */}
                     {showPayButton && (
@@ -436,28 +596,148 @@ export default function JoinSession() {
             </View>
           </View>
 
-          <View className="flex flex-row items-center justify-between border-b-[1px] border-t-[1px] border-[#5c5a5a8a] px-[31px] py-[21px]">
-            <View className="flex flex-row gap-[17px]">
-              <ThemedText
-                lightColor={theme.text}
-                darkColor={theme.text}
-                className="text-[15px] font-[500]"
-              >
-                Lineups
-              </ThemedText>
-              <ThemedText
-                lightColor={theme.text}
-                darkColor={theme.text}
-                className="text-[15px] font-[500]"
-              >
-                Squad List
-              </ThemedText>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              borderTopWidth: 1,
+              borderBottomWidth: 1,
+              borderColor: "#5c5a5a8a",
+              paddingHorizontal: 31,
+              paddingVertical: 21,
+            }}
+          >
+            <View style={{ flexDirection: "row", gap: 17 }}>
+              {(["lineups", "squad"] as const).map((view) => {
+                const label = view === "lineups" ? "Lineups" : "Squad List";
+                const isActive = activeView === view;
+                return (
+                  <TouchableOpacity
+                    key={view}
+                    onPress={() => setActiveView(view)}
+                    className="relative"
+                  >
+                    <ThemedText
+                      lightColor={isActive ? "#00CC77" : theme.text}
+                      darkColor={isActive ? "#00FF94" : theme.text}
+                      style={{
+                        fontSize: 15,
+                        fontWeight: isActive ? "700" : "500",
+                      }}
+                    >
+                      {label}
+                    </ThemedText>
+                    {isActive && (
+                      <View className="absolute bottom-[-25px] h-[2px] w-full bg-[#00FF94]" />
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
             </View>
-            <PitchIcon />
+            <TouchableOpacity onPress={() => setActiveView("lineups")}>
+              <PitchIcon />
+            </TouchableOpacity>
           </View>
 
-          {/* Player list — from server response, includes paymentStatus badges */}
-          {loadingActiveSession && members.length === 0 ? (
+          {activeView === "lineups" ? (
+            <View style={{ marginHorizontal: 16 }}>
+              <View
+                style={{
+                  height: 420,
+                  borderRadius: 14,
+                  overflow: "hidden",
+                  position: "relative",
+                }}
+              >
+                <Image
+                  source={pitch}
+                  resizeMode="cover"
+                  style={{
+                    position: "absolute",
+                    width: "100%",
+                    height: "100%",
+                  }}
+                />
+                <View
+                  style={{
+                    ...StyleSheet.absoluteFillObject,
+                    backgroundColor: "rgba(0,0,0,0.18)",
+                  }}
+                />
+                {buildFormationPositions(members.length).map((pos, i) => {
+                  const member = members[i];
+                  const displayName =
+                    member?.nickname || member?.firstName || `P${i + 1}`;
+                  const initial = displayName[0]?.toUpperCase() ?? "?";
+                  return (
+                    <View
+                      key={i}
+                      style={{
+                        position: "absolute",
+                        left: `${pos.left}%` as any,
+                        top: `${pos.top}%` as any,
+                        transform: [{ translateX: -22 }, { translateY: -22 }],
+                        alignItems: "center",
+                        width: 44,
+                      }}
+                    >
+                      <View
+                        style={{
+                          width: 40,
+                          height: 40,
+                          borderRadius: 20,
+                          backgroundColor: "#00FF94",
+                          borderWidth: 2,
+                          borderColor: "#fff",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          shadowColor: "#000",
+                          shadowOpacity: 0.4,
+                          shadowRadius: 4,
+                          elevation: 4,
+                        }}
+                      >
+                        <Text
+                          style={{
+                            fontSize: 15,
+                            fontWeight: "800",
+                            color: "#000",
+                          }}
+                        >
+                          {initial}
+                        </Text>
+                      </View>
+                      <View
+                        style={{
+                          marginTop: 3,
+                          backgroundColor: "rgba(0,0,0,0.72)",
+                          borderRadius: 10,
+                          paddingHorizontal: 5,
+                          paddingVertical: 2,
+                          maxWidth: 56,
+                        }}
+                      >
+                        <Text
+                          numberOfLines={1}
+                          style={{
+                            fontSize: 9,
+                            color: "#fff",
+                            fontWeight: "700",
+                            textAlign: "center",
+                          }}
+                        >
+                          {displayName.length > 8
+                            ? `${displayName.slice(0, 7)}…`
+                            : displayName}
+                        </Text>
+                      </View>
+                    </View>
+                  );
+                })}
+              </View>
+            </View>
+          ) : loadingActiveSession && members.length === 0 ? (
             <View style={{ alignItems: "center", paddingVertical: 20 }}>
               <ActivityIndicator color="#00FF94" />
             </View>
@@ -474,8 +754,10 @@ export default function JoinSession() {
               />
             ))
           ) : (
-            <View className="items-center py-10">
-              <Text className="text-gray-400 text-sm">No players yet</Text>
+            <View style={{ alignItems: "center", paddingVertical: 40 }}>
+              <Text style={{ color: "#9BA1A6", fontSize: 14 }}>
+                No players yet
+              </Text>
             </View>
           )}
         </View>
@@ -500,8 +782,8 @@ export default function JoinSession() {
             style={{
               position: "absolute",
               top: 250,
-              left: 0,
-              right: 0,
+              left: 20,
+              right: 20,
               zIndex: 300,
             }}
             className="rounded-[10px] bg-[#F2F2F2] px-[31px] py-[40px] shadow-lg"

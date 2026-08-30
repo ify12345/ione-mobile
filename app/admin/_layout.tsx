@@ -58,9 +58,25 @@ function AdminAppNavigator() {
       />
 
       <Stack.Screen
+        name="open-hours"
+        options={{
+          title: "Open Hours",
+          headerShown: false,
+        }}
+      />
+
+      <Stack.Screen
         name="transactionhistory"
         options={{
           title: "Transaction History",
+          headerShown: false,
+        }}
+      />
+
+      <Stack.Screen
+        name="team-status"
+        options={{
+          title: "Team Status",
           headerShown: false,
         }}
       />
@@ -72,6 +88,39 @@ function AdminAppNavigator() {
           headerShown: false,
         }}
       />
+
+      <Stack.Screen
+        name="wallets"
+        options={{
+          title: "Wallets",
+          headerShown: false,
+        }}
+      />
+
+      <Stack.Screen
+        name="bank-account"
+        options={{
+          title: "Bank Account",
+          headerShown: false,
+        }}
+      />
+
+      <Stack.Screen
+        name="ledger"
+        options={{
+          title: "Ledger",
+          headerShown: false,
+        }}
+      />
+
+      <Stack.Screen
+        name="wallet-transactions"
+        options={{
+          title: "Wallet Transactions",
+          headerShown: false,
+        }}
+      />
+
       <Stack.Screen
         name="onboarding"
         options={{

@@ -1,6 +1,5 @@
 import { createSets, getSession, getSessionSets } from "@/api/sessions";
 import pitch from "@/assets/images/greenpitch.png";
-import BackIcon from "@/assets/svg/BackIcon";
 import OpenIcon from "@/assets/svg/OpenIcon";
 import SafeAreaScreen from "@/components/SafeAreaScreen";
 import { ThemedText } from "@/components/ThemedText";
@@ -8,6 +7,7 @@ import { Colors } from "@/constants/Colors";
 import { useAppDispatch, useAppSelector } from "@/redux/store";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
+import { Ionicons } from "@expo/vector-icons";
 import {
   ActivityIndicator,
   Image,
@@ -162,11 +162,15 @@ export default function Assigned() {
 
   const dispatch = useAppDispatch();
   const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
   const theme = Colors[colorScheme ?? "light"];
   const [showDetails, setShowDetails] = useState(false);
   const [activeTab, setActiveTab] = useState<"squad" | "lineups">("squad");
   const [selectedSet, setSelectedSet] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [finalizeStatus, setFinalizeStatus] = useState<
+    "idle" | "finalizing" | "takingLong"
+  >("idle");
 
   const { sets, loadingSets, creatingSet, activeSession } = useAppSelector(
     (s) => s.sessions,
@@ -177,6 +181,11 @@ export default function Assigned() {
   const sessionData = activeSession ?? staticData;
   const members: Member[] = sessionData?.members ?? [];
   const paymentRequired = sessionData?.paymentRequired ?? false;
+
+  // Paid sessions: all members have paid but teams are still being allocated
+  const allPaid =
+    Boolean(sessionData?.allPaymentsCompleted) ||
+    sessionData?.paymentStatus === "COMPLETED";
 
   const pitchName = sessionData?.location?.name ?? "Unknown Pitch";
   const pitchAddress = sessionData?.location?.address ?? "";
@@ -198,6 +207,48 @@ export default function Assigned() {
     setRefreshing(false);
   };
 
+  // ── Filtering ──────────────────────────────────────────────────────────────
+  const safeSets: SetDoc[] = Array.isArray(sets) ? sets : [];
+
+  // ── Auto-poll for team allocation (paid sessions) ──────────────────────────
+  // Once every member has paid, the server auto-allocates teams (fire & forget).
+  // Poll GET /sets/:sessionId until teams appear; after ~10 attempts (5s) surface
+  // a manual retry that calls POST /sets/create/:sessionId (safe, no duplicates).
+  useEffect(() => {
+    if (!sessionId || !paymentRequired || !allPaid) {
+      setFinalizeStatus("idle");
+      return;
+    }
+    if (safeSets.length > 0) {
+      setFinalizeStatus("idle");
+      return;
+    }
+
+    let attempts = 0;
+    const maxAttempts = 10;
+    setFinalizeStatus("finalizing");
+
+    const interval = setInterval(async () => {
+      attempts += 1;
+      try {
+        const sets = await dispatch(getSessionSets({ sessionId })).unwrap();
+        if (Array.isArray(sets) && sets.length > 0) {
+          clearInterval(interval);
+          setFinalizeStatus("idle");
+          return;
+        }
+      } catch {
+        // ignore & keep polling
+      }
+      if (attempts >= maxAttempts) {
+        clearInterval(interval);
+        setFinalizeStatus("takingLong");
+      }
+    }, 500);
+
+    return () => clearInterval(interval);
+  }, [sessionId, paymentRequired, allPaid, safeSets.length, dispatch]);
+
   // ── Create sets ────────────────────────────────────────────────────────────
   const handleCreateSets = () => {
     if (!sessionId) return;
@@ -205,15 +256,14 @@ export default function Assigned() {
       .unwrap()
       .then(() => {
         Toast.show({ type: "success", text1: "Sets created!" });
+        setFinalizeStatus("idle");
         dispatch(getSessionSets({ sessionId }));
       })
       .catch((err: any) => {
+        setFinalizeStatus("takingLong");
         Toast.show({ type: "error", text1: "Error", text2: err?.msg });
       });
   };
-
-  // ── Filtering ──────────────────────────────────────────────────────────────
-  const safeSets: SetDoc[] = Array.isArray(sets) ? sets : [];
 
   const currentSet: SetDoc | null = selectedSet
     ? (safeSets.find((s) => s._id === selectedSet) ?? null)
@@ -262,18 +312,25 @@ export default function Assigned() {
       >
         <View className="flex flex-col gap-[31px]">
           {/* ── Header ─────────────────────────────────────────────────────── */}
-          <View className="mx-[32px] flex flex-col gap-[31px]">
+          <View className="mx-[24px] flex flex-col gap-[31px]">
             <View>
               <View className="flex flex-row items-center justify-between">
                 <TouchableOpacity onPress={() => router.back()}>
-                  <BackIcon />
+                  <Ionicons
+                    name="arrow-back"
+                    size={22}
+                    color={isDark ? "#fff" : "#111"}
+                  />
                 </TouchableOpacity>
                 <ThemedText
                   lightColor={theme.text}
                   darkColor={theme.text}
                   className="text-[20px] font-[600]"
                 >
-                  {sessionData?.matchType?.toUpperCase() ?? "Match"}
+                  {sessionData?.matchType
+                    ? sessionData.matchType.charAt(0).toUpperCase() +
+                      sessionData.matchType.slice(1)
+                    : "Match"}
                 </ThemedText>
                 <TouchableOpacity
                   onPress={() => setShowDetails(true)}
@@ -292,33 +349,71 @@ export default function Assigned() {
               </View>
             </View>
 
-            {/* Create Sets — only captain can create, and only when no sets exist yet */}
-            {isCaptain && safeSets.length === 0 && !loadingSets && (
-              <TouchableOpacity
-                onPress={handleCreateSets}
-                disabled={creatingSet}
-                className="bg-[#00FF94] rounded-lg py-3 px-4 items-center"
-                activeOpacity={0.7}
-              >
-                {creatingSet ? (
-                  <ActivityIndicator color="#000" />
+            {/* Paid session — everyone has paid, teams are being allocated */}
+            {safeSets.length === 0 && paymentRequired && allPaid && (
+              <>
+                {finalizeStatus === "takingLong" ? (
+                  <View className="rounded-lg bg-[#1A1A1A]/5 py-4 px-4 items-center">
+                    <Text className="text-[13px] text-[#6D717F] text-center">
+                      Teams are taking longer than expected to be allocated.
+                    </Text>
+                    <TouchableOpacity
+                      onPress={handleCreateSets}
+                      disabled={creatingSet}
+                      className="mt-3 bg-[#00FF94] rounded-lg py-3 px-6 items-center"
+                      activeOpacity={0.7}
+                    >
+                      {creatingSet ? (
+                        <ActivityIndicator color="#000" />
+                      ) : (
+                        <Text className="text-black font-[600] text-[15px]">
+                          Finalize Teams
+                        </Text>
+                      )}
+                    </TouchableOpacity>
+                  </View>
                 ) : (
-                  <Text className="text-black font-[600] text-[16px]">
-                    Create Sets
-                  </Text>
+                  <View className="items-center py-2">
+                    <ActivityIndicator color="#00FF94" />
+                    <Text className="text-[12px] text-[#6D717F] mt-1">
+                      Finalizing teams…
+                    </Text>
+                  </View>
                 )}
-              </TouchableOpacity>
+              </>
             )}
 
+            {/* Manual create — only when no sets exist yet (non-auto cases) */}
+            {safeSets.length === 0 &&
+              !loadingSets &&
+              (!paymentRequired || !allPaid) && (
+                <TouchableOpacity
+                  onPress={handleCreateSets}
+                  disabled={creatingSet}
+                  className="bg-[#00FF94] rounded-lg py-3 px-4 items-center"
+                  activeOpacity={0.7}
+                >
+                  {creatingSet ? (
+                    <ActivityIndicator color="#000" />
+                  ) : (
+                    <Text className="text-black font-[600] text-[16px]">
+                      Create Sets
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              )}
+
             {/* Loading sets */}
-            {(loadingSets || creatingSet) && (
-              <View className="items-center py-2">
-                <ActivityIndicator color="#00FF94" />
-                <Text className="text-[12px] text-[#6D717F] mt-1">
-                  {creatingSet ? "Creating sets…" : "Loading sets…"}
-                </Text>
-              </View>
-            )}
+            {(loadingSets || creatingSet) &&
+              safeSets.length === 0 &&
+              !(paymentRequired && allPaid) && (
+                <View className="items-center py-2">
+                  <ActivityIndicator color="#00FF94" />
+                  <Text className="text-[12px] text-[#6D717F] mt-1">
+                    {creatingSet ? "Creating sets…" : "Loading sets…"}
+                  </Text>
+                </View>
+              )}
           </View>
 
           {/* ── Team selector (shown when sets exist) ──────────────────────── */}
@@ -339,25 +434,38 @@ export default function Assigned() {
           )}
 
           {/* ── Tab bar ────────────────────────────────────────────────────── */}
-          <View className="flex flex-row items-center justify-between border-b-[1px] border-t-[1px] border-[#5c5a5a8a] px-[31px] py-[21px]">
+          <View className="flex flex-row items-center relative justify-between border-b-[1px] border-t-[1px] border-[#5c5a5a8a] px-[31px] py-[21px]">
             <View className="flex flex-row gap-[17px]">
               <Pressable onPress={() => setActiveTab("squad")} hitSlop={8}>
-                <ThemedText
-                  lightColor={activeTab === "squad" ? "#000" : "#00000060"}
-                  darkColor={activeTab === "squad" ? "#FFF" : "#FFFFFF60"}
-                  className={`py-2 text-[15px] font-[500] ${activeTab === "squad" ? "border-b-[3px] border-[#00FF94]" : ""}`}
-                >
-                  Squad List
-                </ThemedText>
+                <View className="relative">
+                  <ThemedText
+                    lightColor={activeTab === "squad" ? "#000" : "#00000060"}
+                    darkColor={activeTab === "squad" ? "#FFF" : "#FFFFFF60"}
+                    className="py-2 text-[15px] font-[500]"
+                  >
+                    Squad List
+                  </ThemedText>
+
+                  {activeTab === "squad" && (
+                    <View className="absolute bottom-[-22px] h-[2px] w-full bg-[#00FF94]" />
+                  )}
+                </View>
               </Pressable>
+
               <Pressable onPress={() => setActiveTab("lineups")} hitSlop={8}>
-                <ThemedText
-                  lightColor={activeTab === "lineups" ? "#000" : "#00000060"}
-                  darkColor={activeTab === "lineups" ? "#FFF" : "#FFFFFF60"}
-                  className={`py-2 text-[15px] font-[500] ${activeTab === "lineups" ? "border-b-[3px] border-[#00FF94]" : ""}`}
-                >
-                  Lineups
-                </ThemedText>
+                <View className="relative">
+                  <ThemedText
+                    lightColor={activeTab === "lineups" ? "#000" : "#00000060"}
+                    darkColor={activeTab === "lineups" ? "#FFF" : "#FFFFFF60"}
+                    className="py-2 text-[15px] font-[500]"
+                  >
+                    Lineups
+                  </ThemedText>
+
+                  {activeTab === "lineups" && (
+                    <View className="absolute bottom-[-22px] h-[2px] w-full bg-[#00FF94]" />
+                  )}
+                </View>
               </Pressable>
             </View>
             <TouchableOpacity

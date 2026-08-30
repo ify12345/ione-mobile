@@ -1,5 +1,6 @@
 import { Formik } from "formik";
 import * as React from "react";
+import { useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -15,6 +16,7 @@ import SafeAreaScreen from "@/components/SafeAreaScreen";
 import { ThemedText } from "@/components/ThemedText";
 import CustomButton from "@/components/ui/CustomButton";
 import { Icon } from "@/components/ui/Icon";
+import Loader from "@/components/loader";
 import { useAppDispatch } from "@/redux/store";
 import { useRouter } from "expo-router";
 import { Toast } from "toastify-react-native";
@@ -36,7 +38,7 @@ export default function SignIn() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
   const dispatch = useAppDispatch();
-  const [loading, setLoading] = React.useState(false);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const initialValues: SigninInput = { email: "", password: "" };
@@ -209,6 +211,7 @@ export default function SignIn() {
           )}
         </Formik>
       </KeyboardAvoidingView>
+      <Loader visible={loading} />
     </SafeAreaScreen>
   );
 }

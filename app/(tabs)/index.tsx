@@ -16,21 +16,36 @@ import {
   View,
   useColorScheme,
 } from "react-native";
+import ActionBanner from "@/components/ActionBanner";
 
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
   const router = useRouter();
   const { user } = useAppSelector((state) => state.auth);
-  const { pitches, loadingPitches } = useAppSelector((state) => state.sessions);
+  const { pitches, loadingPitches, sessions } = useAppSelector(
+    (state) => state.sessions,
+  );
   const dispatch = useAppDispatch();
 
   useEffect(() => {
     if (!user?.location?.coordinates) return;
     const [lat, lng] = user.location.coordinates;
     dispatch(nearBy({ lat, lng }));
+    // dispatch(
+    //   nearBy({
+    //     lat: 4.094,
+    //     lng: 6.41222,
+    //   }),
+    // );
     dispatch(nearByLocation({ lat, lng }));
+    // dispatch(nearByLocation({ lat: 6.45306, lng: 3.42158 }));
   }, [dispatch, user]);
+
+  // lng=6.41222&lat=4.094
+  //   console.log("[HomeScreen] pitches:", pitches);
+
+  const showEmailVerificationBanner = !user?.emailVerified;
 
   const formattedPitches =
     pitches?.map((p: any) => ({
@@ -50,7 +65,7 @@ export default function HomeScreen() {
   return (
     <SafeAreaScreen className="flex-1">
       {/* ── FIXED TOP SECTION ── */}
-      <View style={{ paddingHorizontal: 35, paddingTop: 8, gap: 18 }}>
+      <View style={{ paddingHorizontal: 24, paddingTop: 8, gap: 18 }}>
         {/* Header */}
         <View
           style={{
@@ -117,12 +132,24 @@ export default function HomeScreen() {
           <FilterSvg />
         </View>
 
+        {showEmailVerificationBanner && (
+          <ActionBanner
+            title="Verify Your Email"
+            description="Verify your email to unlock all app features."
+            icon="mail-outline"
+            accent={accent}
+            isDark={isDark}
+            onPress={() => router.push("/verify-email")}
+          />
+        )}
+
         {/* Nearby Pitches */}
         <View style={{ gap: 12 }}>
           <View
             style={{
               flexDirection: "row",
               justifyContent: "space-between",
+              width: "100%",
               alignItems: "center",
             }}
           >
@@ -168,7 +195,7 @@ export default function HomeScreen() {
       </View>
 
       {/* ── SCROLLABLE FIXTURES SECTION ── */}
-      <View style={{ flex: 1, paddingHorizontal: 35, paddingTop: 20 }}>
+      <View style={{ flex: 1, paddingHorizontal: 24, paddingTop: 20 }}>
         {/* Section header — stays fixed above the list */}
         <View
           style={{
